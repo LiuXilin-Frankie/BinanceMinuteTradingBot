@@ -83,8 +83,11 @@ class BinanceMarketMakingBot:
 
 
 if __name__ == "__main__":
-    api_key = 'rF7wq1ri0kMJBxRhQZTiFUx5U8OO50oNi9iOZhzLD6kf9N7dIwG4mowiHz7psGX1'
-    secret_key = 'cWtzGZsaoddLMYlw5MghAQDVqm12rkAYiJDxfQwa26WwQRaUnNeXw5dc06KLVzjw'
+    with open('api_key.txt','r') as file:
+        api_content = file.read().split('\n')
+    api_key = api_content[0]
+    secret_key = api_content[1]
+
     BMMB = BinanceMarketMakingBot(api_key, secret_key)
 
     # socket manager using threads
