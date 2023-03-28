@@ -13,13 +13,15 @@ import binance
 
 class BinanceMarketMakingBot:
 
-    def __init__(self, client):
+    def __init__(self, api_key, api_secret):
         """
         对类进行初始化
         针对之后websocket订阅接受的数据格式  创建相关dict
         同时利用向交易所的请求为这些dict初始赋值  避免访问失败的情况出现。
         """
-        self.client = client
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.client = binance.Client(self.api_key, self.api_secret)
         self.btc_min_balance = 0
         # 初始化交易所信息
         info = self.client.get_exchange_info()
@@ -83,9 +85,7 @@ class BinanceMarketMakingBot:
 if __name__ == "__main__":
     api_key = 'rF7wq1ri0kMJBxRhQZTiFUx5U8OO50oNi9iOZhzLD6kf9N7dIwG4mowiHz7psGX1'
     secret_key = 'cWtzGZsaoddLMYlw5MghAQDVqm12rkAYiJDxfQwa26WwQRaUnNeXw5dc06KLVzjw'
-    client = binance.Client(api_key, secret_key)
-
-    BMMB = BinanceMarketMakingBot(client)
+    BMMB = BinanceMarketMakingBot(api_key, secret_key)
 
     # socket manager using threads
     twm = binance.ThreadedWebsocketManager()
