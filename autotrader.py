@@ -55,6 +55,13 @@ class BinanceMarketMakingBot:
             temp_balance['locked'] = i['locked']
             self.account_balances[i["asset"]] = temp_balance
 
+        """
+        /*----- websocket market data -----*/   
+        以下字典用于接受不同的websocket行情自动更新信息
+        请根据策略特性选择需要开启的行情接受
+        请不要过度开启 避免过高的流量费用以及内存占用
+        """
+
         # Init to accept websocket of Individual Symbol Book Ticker Streams
         ### 创建用于接收实时推送的最优买卖价格以及数量
         self.orderbook_tickers = self.client.get_orderbook_tickers()
@@ -69,6 +76,7 @@ class BinanceMarketMakingBot:
             temp_book['A'] = i['askQty']
             self.orderbook_best[i['symbol']] = temp_book
 
+        
         print('/*----- Initial Success -----*/')
 
 
@@ -103,13 +111,4 @@ if __name__ == "__main__":
 
     # dcm.start_depth_cache(callback=handle_dcm_message, symbol='ETHBTC')
     #tm = 
-
-    info = client.get_exchange_info()
-    for s in info['symbols']:
-    # 如果不交易则跳过
-        if s['status']!='TRADING': continue
-        symbol = s['symbol']
-        if symbol.endswith('USDT'):
-            print(symbol)
-
 
