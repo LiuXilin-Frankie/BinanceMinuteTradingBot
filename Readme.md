@@ -6,7 +6,9 @@ used for binance trading frame-work.
 + 在这个示例中，我们创建了一个名为MyTradingBot的新类，继承自TradingBot类，并添加了一个新的方法my_new_method()。我们还覆盖了父类中的buy_market_order()方法，以便在方法执行时打印一条自定义消息。
 
 ### quick start
-note: if there exists some import error when you are trying to import python-binance, please delete the env and recreate by the following command, "--conda install" command or the package "jupyter" may be the reason caused this error (not sure). So please keep the trading environment clean. This env is used only for trading, you can backtest your strategy in other env and with your local data.
+note: if there exists some import error when you are trying to import python-binance, please delete the env and recreate by the following command.
+
+"--conda install" command or the package "jupyter" may be the reason caused this error (not sure). So please keep the trading environment clean. This env is used only for trading, you can backtest your strategy in other env and with your local data.
 ```shell
 conda create -n BinanceTrading python=3.8
 conda activate BinanceTrading
@@ -18,5 +20,6 @@ pip install python-binance==1.0.17
 ```
 
 ### file structure
-+ autotrader.py: trading frame work
++ binance_trading.py: trading frame work
++ autotrader.py: strategy sample
 + python-binance-readthedocs-io-en-latest.pdf: docs of python-binance==1.0.17
