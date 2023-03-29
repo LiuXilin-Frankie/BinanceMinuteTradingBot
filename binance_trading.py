@@ -1,10 +1,9 @@
 import asyncio
-import json
 from binance import AsyncClient, BinanceSocketManager
 
 
 class TradingBot:
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, symbols):
         self.client = None
         self.bm = None
         self.conn_key = None
@@ -13,17 +12,18 @@ class TradingBot:
         self.tickers = {}
         self.api_key = api_key
         self.api_secret = api_secret
+        self.symbols = symbols
 
-    async def start(self, symbols):
+    async def start(self):
         self.client = await AsyncClient.create(api_key=self.api_key, api_secret=self.api_secret)
         self.bm = BinanceSocketManager(self.client)
-        self.subscribe_to_klines(symbols)
-        self.subscribe_to_trades(symbols)
-        self.subscribe_to_tickers(symbols)
+        self.subscribe_to_klines()
+        self.subscribe_to_trades()
+        self.subscribe_to_tickers()
         await self.bm.start()
 
-    def subscribe_to_klines(self, symbols):
-        for symbol in symbols:
+    def subscribe_to_klines(self):
+        for symbol in self.symbols:
             self.klines[symbol] = {}
             conn_key = self.bm.start_kline_socket(
                 symbol=symbol,
@@ -32,8 +32,8 @@ class TradingBot:
             )
             self.conn_key = conn_key
 
-    def subscribe_to_trades(self, symbols):
-        for symbol in symbols:
+    def subscribe_to_trades(self):
+        for symbol in self.symbols:
             self.trades[symbol] = []
             conn_key = self.bm.start_trade_socket(
                 symbol=symbol,
@@ -41,8 +41,8 @@ class TradingBot:
             )
             self.conn_key = conn_key
 
-    def subscribe_to_tickers(self, symbols):
-        for symbol in symbols:
+    def subscribe_to_tickers(self):
+        for symbol in self.symbols:
             self.tickers[symbol] = {}
             conn_key = self.bm.start_symbol_ticker_socket(
                 symbol=symbol,
@@ -66,31 +66,21 @@ class TradingBot:
         await self.bm.close()
         await self.client.close()
 
+    # 基本的交易方法
+    async def buy_market_order(self, symbol, quantity):
+        order = await self.client.create_order(
+            symbol=symbol,
+            side=AsyncClient.SIDE_BUY,
+            type=AsyncClient.ORDER_TYPE_MARKET,
+            quantity=quantity
+        )
+        return order
 
-async def main():
-    bot = TradingBot(api_key='YOUR_API_KEY', api_secret='YOUR_API_SECRET')
-    symbols = ['btcusdt', 'ethusdt']
-    await bot.start(symbols)
-
-    # 等待接收到一些信息
-    await asyncio.sleep(10)
-
-    # 输出收到的klines信息
-    print('Klines:')
-    print(json.dumps(bot.klines, indent=4))
-
-    # 输出收到的trades信息
-    print('Trades:')
-    print(json.dumps(bot.trades, indent=4))
-
-    # 输出收到的tickers信息
-    print('Tickers:')
-    print(json.dumps(bot.tickers, indent=4))
-
-    # 关闭WebSocket连接
-    await bot.close()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
+    async def sell_market_order(self, symbol, quantity):
+        order = await self.client.create_order(
+            symbol=symbol,
+            side=AsyncClient.SIDE_SELL,
+            type=AsyncClient.ORDER_TYPE_MARKET,
+            quantity=quantity
+        )
+        return order
