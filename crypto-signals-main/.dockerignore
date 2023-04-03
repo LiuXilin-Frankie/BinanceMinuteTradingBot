@@ -1,0 +1,14 @@
+# Python
+*.pyc
+*~
+__pycache__
+
+#env variables
+.env
+
+#virtual env
+myvenv/
+venv/
+
+#docker compose
+docker-compose.yml

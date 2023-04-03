@@ -13,6 +13,7 @@ class TradingBot:
         self.klines = {}
         self.trades = {}
         self.tickers = {}
+        self.balance = {}
         self.api_key = api_key
         self.api_secret = api_secret
         self.symbols = symbols

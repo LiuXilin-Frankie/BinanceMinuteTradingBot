@@ -1,0 +1,10 @@
+# Python
+*.pyc
+*~
+__pycache__
+
+# Env
+.env
+main/.env
+myvenv/
+venv/
