@@ -1,6 +1,7 @@
 # self-defined
 try*
 api_key.txt
+.DS_store
 
 
 # ignore large files
