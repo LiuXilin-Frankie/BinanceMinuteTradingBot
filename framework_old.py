@@ -134,7 +134,8 @@ class BinanceTradingBot:
         """
         用于获取交易所延迟的函数
         - request_time_cost: 是我们开始向交易所请求，交易所向我们返回值结束这一整个过程的耗时
-        - arrival_time_cost: 我们发送的请求到达交易所的耗时，因为已经开启订阅，所以我们通常更关注这个
+        - arrival_time_cost: 我们发送指令的那一刻与指令到达交易所时交易所时间的差值，我们通常更关注这个
+                             差值通常有两个部分组成：指令发送过程中的时间，交易所推送服务器与本地服务器的时间戳可能不同步（由交易所特性决定
         """
         start_time = int(time.time()*1000)
         z = self.client.get_server_time()['serverTime']

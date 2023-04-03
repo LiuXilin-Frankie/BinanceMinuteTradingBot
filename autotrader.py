@@ -1,6 +1,7 @@
 __author__ = 'AbsoluteX'
 __email__ = 'l276660317@gmail.com'
 
+from binance import BinanceSocketManager
 from framework_old import BinanceTradingBot
 
 
@@ -15,6 +16,12 @@ class BinanceMarketMakingBot(BinanceTradingBot):
         """
         pass
 
+    def start(self):
+        while True:
+            self.strategy()
+            # if exist sig:
+                # set orders
+
 
 
 if __name__ == "__main__":
@@ -26,9 +33,7 @@ if __name__ == "__main__":
     api_key = api_content[0]
     secret_key = api_content[1]
     
-    # 创建交易机器人
     BMMB = BinanceMarketMakingBot(api_key, secret_key)
-
     # 检测api延迟 如果延迟过高我们会直接退出程序
     # 此情况下请检查您的网络
     cnt=0
@@ -40,25 +45,28 @@ if __name__ == "__main__":
             print('high latency')
             sys.exit(0)
 
+    ### websocket callback function
+    ### callback function for start_kline_socke
+    def update_klines_dict(msg):
+        BMMB.klines[msg['s']] = msg
 
-    def update_orderbook_dict(msg): # callback function for start_ticker_socket
-        bab.orderbook_tickers_dict[msg['s']] = msg
-
-    def update_user(msg): # callback function for start_user_socket
+    ### websocket callback function
+    ### callback function for start_user_socket
+    def update_user(msg): 
         if msg['e'] == 'executionReport':
-            bab.trade_status_dict[msg['s']] = msg
+            BMMB.trade_status_dict[msg['s']] = msg
         else:
             balances = msg['B']
             try:
                 for i in balances:
-                    bab.asset_balances[i['a']] = i
-                    #if not bab.buy_eth_lock.locked():
-                        #print("c1 not enough, please buy more")
-                        #threading.Thread(target=bab.buy_eth).start()
+                    BMMB.asset_balances[i['a']] = i
             except:
                 print(msg)
 
-    bm = BinanceSocketManager(client)
-    bm.start_book_ticker_socket(update_orderbook_dict)
+    bm = BinanceSocketManager(BMMB.client)
+    symbols = ['BTCUSDT','ETHUSDT'] #the symbol you want to trade
+    for symbol in symbols:
+        bm.start_kline_socke(callback=update_klines_dict,symbol=symbol)
     bm.start_user_socket(update_user)
+    time.sleep(10) #wait for initialize
     bm.start()
