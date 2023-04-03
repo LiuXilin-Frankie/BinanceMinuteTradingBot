@@ -11,7 +11,7 @@ from typing import Dict, List
 import binance
 
 
-class BinanceMarketMakingBot:
+class BinanceTradingBot:
 
     def __init__(self, api_key, api_secret):
         """
@@ -46,6 +46,12 @@ class BinanceMarketMakingBot:
             self.symbol_info[symbol]['stepSize'] = s['filters'][1]['stepSize']
             self.symbol_info[symbol]['minNotional'] = s['filters'][2]['minNotional']
 
+        # 用于存储我们的orders信息
+        self.order_info_dict = dict()
+        for s in info['symbols']:
+            symbol = s['symbol']
+            self.order_info_dict[symbol] = dict()
+
         # Init for account balance
         ### 创建用于实时更新账户余额数据
         self.account_balances = {}
@@ -63,6 +69,66 @@ class BinanceMarketMakingBot:
 
         print('/*----- Initial Success -----*/')
 
+    
+    ### /*----- orders func -----*/
+    ### below are all func about palce order in the market
+    ### you can directly set market order since I have defined here
+
+    def market_buy(self,symbol,qty):
+        """
+        下市价买单
+        """
+        symbol = symbol.upper()
+        if self.order_errors(qty,symbol):      #used for catching the error
+            print("symbol,qty: ",symbol,qty)
+            start_time = time.time()
+            order_info = self.client.order_market_buy(symbol=symbol, quantity=str(qty))
+            print("time cost for place the buy pivot order is:",time.time()-start_time)
+            self.order_info_dict[symbol] = order_info
+            return order_info['orderId']
+        else:
+            time.sleep(0.1)
+            return False
+        
+    def market_sell(self,symbol,qty):
+        """
+        下市价卖单
+        """
+        symbol = symbol.upper()
+        if self.order_errors(qty,symbol):      #used for catching the error
+            print("symbol,qty: ",symbol,qty)
+            start_time = time.time()
+            order_info = self.client.order_market_sell(symbol=symbol, quantity=str(qty))
+            print("time cost for place the buy pivot order is:",time.time()-start_time)
+            self.order_info_dict[symbol] = order_info
+            return order_info['orderId']
+        else:
+            time.sleep(0.1)
+            return False
+
+
+    ### /*----- moduls -----*/
+    ### tools functiuon in our BinanceMarketMakingBot
+    ### most of time you can just ignore below self.func
+
+    def order_errors(self, qty, symbol, prc=None):
+        """
+        检查函数
+        用于检查下单量是否符合交易所规则
+        """
+        if qty < float(self.min_quantity[symbol]):
+            print('not enough to sell')
+            return False
+        if qty > float(self.max_quantity[symbol]):
+            print("sell amount too high")
+            return False
+        
+        if prc is None: return True
+        if qty*prc < float(self.min_notional[symbol]):
+            print('qty*prc too small')
+            return False
+        return True
+
 
     def get_time_diff(self):
         """
@@ -79,26 +145,4 @@ class BinanceMarketMakingBot:
         
         print('request time cost is ',request_time_cost,'ms')
         return arrival_time_cost
-
-
-if __name__ == "__main__":
-    # 初始化api的账号以及密码
-    # 账号和密码被存在本地的文件中没有上传
-    # 请私聊我获取api_key.txt的最新文件 或者创建您的api key
-    with open('api_key.txt','r') as file:
-        api_content = file.read().split('\n')
-    api_key = api_content[0]
-    secret_key = api_content[1]
-    
-    # 创建交易机器人
-    BMMB = BinanceMarketMakingBot(api_key, secret_key)
-
-    cnt=0
-    while cnt<10:
-        time_diff = BMMB.get_time_diff()
-        print("excution arrive exchange cost: ",time_diff,'ms\n')
-        cnt+=1
-        if time_diff>=1000:
-            print('high latency')
-            sys.exit(0)
 
