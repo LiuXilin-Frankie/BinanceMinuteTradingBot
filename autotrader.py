@@ -4,7 +4,18 @@ __email__ = 'l276660317@gmail.com'
 import time
 from binance import ThreadedWebsocketManager
 from framework_old import BinanceTradingBot
+"""
+Todo:
 
+1.您可以更改symbols中的标的，这代表我们将会交易什么，
+    symbols为list但是目前我们只能交易第一个元素，后续版本可能对此进行改进
+2.update_data数据自定义
+    为您的策略保存一些自定义的历史数据，比如长度为30的分钟k线，您同样可以在init中添加属性
+3.strategy是您的策略
+    函数会持续运行，一旦产生信号则交易
+    我们只能模拟下市价单，返回的值为如果我们真的下市价单成交的价格（忽略了数量
+    请在position balance等属性中同步更新方便计算净值
+"""
 
 class MyTradingBot(BinanceTradingBot):
     def __init__(self, api_key, api_secret, symbols):
@@ -12,6 +23,7 @@ class MyTradingBot(BinanceTradingBot):
         self.symbols = symbols
         self.balance = 0    #default is usdt
         self.position = {}
+        
         self.kline_history = {}
         for symbol in symbols:
             self.position[symbol]=0
@@ -38,13 +50,15 @@ class MyTradingBot(BinanceTradingBot):
         define your strategy here
         """
         self.update_data()
+        # sig = xxxxx
+
+        # if exist sig:
+            # trade_prc = self.market_buy(symbol,qty)
         pass
 
     def start(self):
         while True:
             self.strategy()
-            # if exist sig:
-                # set orders
 
 
 
