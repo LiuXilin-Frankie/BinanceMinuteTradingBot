@@ -46,23 +46,6 @@ class BinanceTradingBot:
             self.symbol_info[symbol]['stepSize'] = s['filters'][1]['stepSize']
             self.symbol_info[symbol]['minNotional'] = s['filters'][2]['minNotional']
 
-        # 用于存储我们的orders信息
-        self.order_info_dict = dict()
-        for s in info['symbols']:
-            symbol = s['symbol']
-            self.order_info_dict[symbol] = dict()
-
-        # Init for account balance
-        ### 创建用于实时更新账户余额数据
-        self.account_balances = {}
-        z = self.client.get_account()
-        for i in z['balances']:
-            temp_balance = {}
-            temp_balance['asset'] = i['asset']
-            temp_balance['free'] = i['free']
-            temp_balance['locked'] = i['locked']
-            self.account_balances[i["asset"]] = temp_balance
-
         # Init to accept websocket of Individual Symbol klines
         ### 创建用于接收kline数据的类
         self.klines = {}
@@ -82,10 +65,13 @@ class BinanceTradingBot:
         if self.order_errors(qty,symbol):      #used for catching the error
             print("symbol,qty: ",symbol,qty)
             start_time = time.time()
-            order_info = self.client.order_market_buy(symbol=symbol, quantity=str(qty))
-            print("time cost for place the buy pivot order is:",time.time()-start_time)
-            self.order_info_dict[symbol] = order_info
-            return order_info['orderId']
+            # order_info = self.client.order_market_buy(symbol=symbol, quantity=str(qty))
+            # print("time cost for place the buy pivot order is:",time.time()-start_time)
+            # self.order_info_dict[symbol] = order_info
+            # return order_info['orderId']
+            actually_trade = self.client.aggregate_trade_iter(symbol=symbol)
+            actually_trade = next(actually_trade)['p']
+            return actually_trade
         else:
             time.sleep(0.1)
             return False
@@ -98,10 +84,13 @@ class BinanceTradingBot:
         if self.order_errors(qty,symbol):      #used for catching the error
             print("symbol,qty: ",symbol,qty)
             start_time = time.time()
-            order_info = self.client.order_market_sell(symbol=symbol, quantity=str(qty))
-            print("time cost for place the buy pivot order is:",time.time()-start_time)
-            self.order_info_dict[symbol] = order_info
-            return order_info['orderId']
+            # order_info = self.client.order_market_sell(symbol=symbol, quantity=str(qty))
+            # print("time cost for place the buy pivot order is:",time.time()-start_time)
+            # self.order_info_dict[symbol] = order_info
+            # return order_info['orderId']
+            actually_trade = self.client.aggregate_trade_iter(symbol=symbol)
+            actually_trade = next(actually_trade)['p']
+            return actually_trade
         else:
             time.sleep(0.1)
             return False
