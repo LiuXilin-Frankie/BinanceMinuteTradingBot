@@ -4,8 +4,6 @@ __email__ = 'l276660317@gmail.com'
 import time
 from binance import ThreadedWebsocketManager
 from framework_old import BinanceTradingBot
-import sys
-
 """
 Todo:
 
@@ -19,17 +17,17 @@ Todo:
     请在position balance等属性中同步更新方便计算净值
 """
 
-
 class MyTradingBot(BinanceTradingBot):
     def __init__(self, api_key, api_secret, symbols):
         super().__init__(api_key, api_secret)
         self.symbols = symbols
-        self.balance = 0  # default is usdt
+        self.balance = 0    #default is usdt
         self.position = {}
-
+        for symbol in symbols:  self.position[symbol]=0
+        
+        ### this is your self-defined parameters
         self.kline_history = {}
         for symbol in symbols:
-            self.position[symbol] = 0
             self.kline_history[symbol] = list()
 
     def update_data(self):
@@ -44,8 +42,10 @@ class MyTradingBot(BinanceTradingBot):
                 self.kline_history[symbol].append(new_kline)
                 # 同样防止内存过载，我们只记录20次历史数据
                 self.kline_history[symbol] = self.kline_history[symbol][-20:]
-                print('add new kline for', symbol)
+                print('add new kline for',symbol)
 
+    
+    
     def strategy(self):
         """
         define your strategy here
@@ -54,7 +54,7 @@ class MyTradingBot(BinanceTradingBot):
         # sig = xxxxx
 
         # if exist sig:
-        # trade_prc = self.market_buy(symbol,qty)
+            # trade_prc = self.market_buy(symbol,qty)
         pass
 
     def start(self):
@@ -62,42 +62,42 @@ class MyTradingBot(BinanceTradingBot):
             self.strategy()
 
 
-if __name__ == "__main__":
 
-    symbols = ['BTCUSDT']  # the symbol you want to trade
+if __name__ == "__main__":
+    
+    symbols = ['BTCUSDT'] #the symbol you want to trade
 
     # 初始化api的账号以及密码
     # 账号和密码被存在本地的文件中没有上传
     # 请私聊我获取api_key.txt的最新文件 或者创建您的api key
-    with open('api_key.txt', 'r') as file:
+    with open('api_key.txt','r') as file:
         api_content = file.read().split('\n')
     api_key = api_content[0]
     secret_key = api_content[1]
-
+    
     BMMB = MyTradingBot(api_key, secret_key, symbols)
     # 检测api延迟 如果延迟过高我们会直接退出程序
     # 此情况下请检查您的网络
-    cnt = 0
-    while cnt < 3:
+    cnt=0
+    while cnt<3:
         time_diff = BMMB.get_time_diff()
-        print("excution arrive exchange cost: ", time_diff, 'ms\n')
-        cnt += 1
-        if time_diff >= 1000:
+        print("excution arrive exchange cost: ",time_diff,'ms\n')
+        cnt+=1
+        if time_diff>=1000:
             print('high latency')
             sys.exit(0)
-
 
     ### websocket callback function
     ### callback function for start_kline_socke
     def update_klines_dict(msg):
         BMMB.klines[msg['s']] = msg
 
-
-    bm = ThreadedWebsocketManager(api_key = api_key, api_secret = secret_key)
+    bm = ThreadedWebsocketManager(api_key=api_key, api_secret=secret_key)
     bm.start()
     for symbol in symbols:
-        bm.start_kline_socket(callback = update_klines_dict, symbol = symbols[0])
-    time.sleep(2)  # wait for initialize
-
+        bm.start_kline_socket(callback=update_klines_dict,symbol=symbols[0])
+    time.sleep(2) #wait for initialize
+    
+    
     print('start bot')
     BMMB.start()
