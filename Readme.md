@@ -1,4 +1,5 @@
 # Binance Trading System
+
 used for binance trading frame-work.
 
 + BinanceTradingBot会是独立写在文件framework_old.py中的一个基类，提供数据更新和处理的方法，以及基本的交易方法。正常的情况下，您无需阅读此文件的代码就可以编写您的数据
@@ -7,9 +8,11 @@ used for binance trading frame-work.
 + 其他编写事项请向下划动
 
 ### quick start
+
 note: if there exists some import error when you are trying to import python-binance, please delete the env and recreate by the following command.
 
 "--conda install" command or the package "jupyter" may be the reason caused this error (not sure). So please keep the trading environment clean. This env is used only for trading, you can backtest your strategy in other env and with your local data.
+
 ```shell
 conda create -n BinanceTrading python=3.8
 conda activate BinanceTrading
@@ -21,18 +24,21 @@ pip install python-binance==1.0.17
 ```
 
 ### file structure
+
 + framework_old.py: trading frame work
 + autotrader.py: strategy sample
 + python-binance-readthedocs-io-en-latest.pdf: docs of python-binance==1.0.17
 
-
 ### logic
+
 事实上，这仅仅只是一次模拟交易
+
 + 程序能够实时接收的行情数据仅仅为您给出symbol的kline数据，数据格式在后文给出
 + 如果您的策略判断进行交易，您只能选择市价单的方式成交，函数返回的数字，为下单命令到达交易所之后，最新且最近的一次成交发生的价格，我们假设这是我们策略实际成交的价格（我们忽略了数量的问题）
 + logger会每分钟记录我们的净值变动
 
 kline数据格式如下：
+
 ```shell
 {
   "e": "kline",     // Event type
