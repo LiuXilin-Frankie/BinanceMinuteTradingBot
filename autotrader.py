@@ -23,10 +23,11 @@ class MyTradingBot(BinanceTradingBot):
         self.symbols = symbols
         self.balance = 0    #default is usdt
         self.position = {}
+        for symbol in symbols:  self.position[symbol]=0
         
+        ### this is your self-defined parameters
         self.kline_history = {}
         for symbol in symbols:
-            self.position[symbol]=0
             self.kline_history[symbol] = list()
 
     def update_data(self):
