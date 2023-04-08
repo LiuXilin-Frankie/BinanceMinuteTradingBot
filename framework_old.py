@@ -1,5 +1,6 @@
 __author__ = 'AbsoluteX'
 __email__ = 'l276660317@gmail.com'
+
 import time
 import math
 import threading
@@ -31,7 +32,7 @@ class BinanceTradingBot:
         ### 创建用于初始化每一个交易对的基本信息
         for s in info['symbols']:
             # 如果不交易则跳过
-            if s['status']!='TRADING': continue
+            if s['status'] != 'TRADING': continue
             # 更新交易所基本信息
             symbol = s['symbol']
             self.symbol_info[symbol] = dict()
@@ -52,55 +53,53 @@ class BinanceTradingBot:
 
         print('/*----- Initial Success -----*/')
 
-    
     ### /*----- orders func -----*/
     ### below are all func about palce order in the market
     ### you can directly set market order since I have defined here
 
-    def market_buy(self,symbol,qty):
+    def market_buy(self, symbol, qty):
         """
         下市价买单
         """
         symbol = symbol.upper()
-        if self.order_errors(qty,symbol):      #used for catching the error
-            print("symbol,qty: ",symbol,qty)
+        if self.order_errors(qty, symbol):  # used for catching the error
+            print("symbol,qty: ", symbol, qty)
             start_time = time.time()
             # order_info = self.client.order_market_buy(symbol=symbol, quantity=str(qty))
             # print("time cost for place the buy pivot order is:",time.time()-start_time)
             # self.order_info_dict[symbol] = order_info
             # return order_info['orderId']
-            actually_trade = self.client.aggregate_trade_iter(symbol=symbol)
+            actually_trade = self.client.aggregate_trade_iter(symbol = symbol)
             actually_trade = next(actually_trade)['p']
             return actually_trade
         else:
             time.sleep(0.1)
             return False
-        
-    def market_sell(self,symbol,qty):
+
+    def market_sell(self, symbol, qty):
         """
         下市价卖单
         """
         symbol = symbol.upper()
-        if self.order_errors(qty,symbol):      #used for catching the error
-            print("symbol,qty: ",symbol,qty)
+        if self.order_errors(qty, symbol):  # used for catching the error
+            print("symbol,qty: ", symbol, qty)
             start_time = time.time()
             # order_info = self.client.order_market_sell(symbol=symbol, quantity=str(qty))
             # print("time cost for place the buy pivot order is:",time.time()-start_time)
             # self.order_info_dict[symbol] = order_info
             # return order_info['orderId']
-            actually_trade = self.client.aggregate_trade_iter(symbol=symbol)
+            actually_trade = self.client.aggregate_trade_iter(symbol = symbol)
             actually_trade = next(actually_trade)['p']
             return actually_trade
         else:
             time.sleep(0.1)
             return False
 
-
     ### /*----- moduls -----*/
     ### tools functiuon in our BinanceMarketMakingBot
     ### most of time you can just ignore below self.func
 
-    def order_errors(self, qty, symbol, prc=None):
+    def order_errors(self, qty, symbol, prc = None):
         """
         检查函数
         用于检查下单量是否符合交易所规则
@@ -109,11 +108,10 @@ class BinanceTradingBot:
             print('not enough to sell')
             return False
         if prc is None: return True
-        if qty*prc < float(self.symbol_info[symbol]['minNotional']):
+        if qty * prc < float(self.symbol_info[symbol]['minNotional']):
             print('qty*prc too small')
             return False
         return True
-
 
     def get_time_diff(self):
         """
@@ -122,13 +120,12 @@ class BinanceTradingBot:
         - arrival_time_cost: 我们发送指令的那一刻与指令到达交易所时交易所时间的差值，我们通常更关注这个
                              差值通常有两个部分组成：指令发送过程中的时间，交易所推送服务器与本地服务器的时间戳可能不同步（由交易所特性决定
         """
-        start_time = int(time.time()*1000)
+        start_time = int(time.time() * 1000)
         z = self.client.get_server_time()['serverTime']
-        end_time = int(time.time()*1000)
-        
-        request_time_cost = end_time-start_time
-        arrival_time_cost = z - start_time
-        
-        print('request time cost is ',request_time_cost,'ms')
-        return arrival_time_cost
+        end_time = int(time.time() * 1000)
 
+        request_time_cost = end_time - start_time
+        arrival_time_cost = z - start_time
+
+        print('request time cost is ', request_time_cost, 'ms')
+        return arrival_time_cost
