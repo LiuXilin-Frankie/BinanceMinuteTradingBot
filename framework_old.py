@@ -105,15 +105,11 @@ class BinanceTradingBot:
         检查函数
         用于检查下单量是否符合交易所规则
         """
-        if qty < float(self.min_quantity[symbol]):
+        if qty < float(self.symbol_info[symbol]['minQty']):
             print('not enough to sell')
             return False
-        if qty > float(self.max_quantity[symbol]):
-            print("sell amount too high")
-            return False
-        
         if prc is None: return True
-        if qty*prc < float(self.min_notional[symbol]):
+        if qty*prc < float(self.symbol_info[symbol]['minNotional']):
             print('qty*prc too small')
             return False
         return True
