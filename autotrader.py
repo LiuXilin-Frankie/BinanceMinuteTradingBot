@@ -5,6 +5,7 @@ import time
 from binance import ThreadedWebsocketManager
 from framework_old import BinanceTradingBot
 import sys
+
 """
 Todo:
 
@@ -23,7 +24,7 @@ class MyTradingBot(BinanceTradingBot):
     def __init__(self, api_key, api_secret, symbols):
         super().__init__(api_key, api_secret)
         self.symbols = symbols
-        self.balance = 0  # default is usdt
+        self.balance = 1000000  # default is usdt
         self.position = {}
         for symbol in symbols:  self.position[symbol] = 0
 
@@ -38,7 +39,7 @@ class MyTradingBot(BinanceTradingBot):
         但是无法获取到历史的，这样写的目的是防止self.klines中的k线数据一味append导致内存过载
         请在这里写下您的历史数据记录函数，帮助您判断是否需要交易
         """
-        for symbol in symbols:
+        for symbol in self.symbols:
             new_kline = self.klines[symbol]
             if new_kline not in self.kline_history[symbol]:
                 self.kline_history[symbol].append(new_kline)
@@ -56,6 +57,171 @@ class MyTradingBot(BinanceTradingBot):
         # if exist sig:
         # trade_prc = self.market_buy(symbol,qty)
         pass
+
+    def strategy_DualMA(self, long_term: int, short_term: int, quantity = 1):
+        '''
+        Dual MA strategy: if MA(short term)> MA(long term), then long the symbol else short
+        if signal occurs then net short or long quantity unit symbol
+        '''
+        self.update_data()
+
+        for symbol in self.symbols:
+            # get the mean close price
+            short_term_mean_now = sum([kline["c"] for kline in self.kline_history[symbol][-short_term:]]) / short_term
+            long_term_mean_now = sum([kline["c"] for kline in self.kline_history[symbol][-long_term:]]) / long_term
+            short_term_mean_last_minute = sum([
+                kline["c"] for kline in self.kline_history[symbol][-short_term - 1:-1]]) / short_term
+            long_term_mean_last_minute = sum(
+                [kline["c"] for kline in self.kline_history[symbol][-long_term - 1:-1]]) / long_term
+
+            if (short_term_mean_now > long_term_mean_now) and (
+                    long_term_mean_last_minute > short_term_mean_last_minute):
+                # if short position:
+                if self.position[symbol] < 0:
+                    # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
+
+                    if self.balance > (self.position[symbol] + quantity + 1) * self.klines[symbol]["c"]:
+                        price = self.market_buy(symbol, self.position[symbol] + quantity)
+                        self.position[symbol] = quantity
+                        self.balance = self.balance - price * (self.position[symbol] + quantity)
+                    else:
+                        print('Not enough Money!')
+
+                elif self.position[symbol] == 0:
+                    if self.balance > (quantity + 1) * self.klines[symbol]["c"]:
+                        price = self.market_buy(symbol, qty = quantity)
+                        self.position[symbol] = self.position[symbol] + quantity
+                        self.balance = self.balance - price * (quantity)
+                    else:
+                        print('Not enough Money!')
+
+                elif self.position[symbol] > 0:
+                    return
+
+            elif (short_term_mean_now < long_term_mean_now) and (
+                    long_term_mean_last_minute < short_term_mean_last_minute):
+                # if long position:
+                if self.position[symbol] > 0:
+                    price = self.market_sell(symbol, self.position[symbol] + quantity)
+                    self.position[symbol] = -quantity
+                    self.balance = self.balance + price * (self.position[symbol] + quantity)
+
+                elif self.position[symbol] == 0:
+                    price = self.market_sell(symbol, qty = quantity)
+                    self.position[symbol] = self.position[symbol] - quantity
+                    self.balance = self.balance + price * (quantity)
+
+                elif self.position[symbol] < 0:
+                    return
+
+    def strategy_Dual_Thrust(self, n: int, k1: float, k2: float, quantity: int):
+        '''
+        :params n: use n history minute bar
+        :params k1: parameter for the buy line
+        :params k2: parameter for the sell line
+        '''
+
+        self.update_data()
+
+        for symbol in self.symbols:
+            # get the mean close price
+            use_klines = self.kline_history[symbol][-n:]
+            HH = max([kline["h"] for kline in use_klines])
+            HC = max([kline["c"] for kline in use_klines])
+            LC = min([kline["c"] for kline in use_klines])
+            LL = min([kline["l"] for kline in use_klines])
+            range = max(HH - LC, HC - LL)
+            buy_line = self.klines[symbol]["o"] + range * k1
+            sell_line = self.klines[symbol]["o"] - range * k2
+
+            if self.klines[symbol]["c"] > buy_line:
+                # if short position:
+                if self.position[symbol] < 0:
+                    # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
+                    if self.balance > (self.position[symbol] + quantity + 1) * self.klines[symbol]["c"]:
+                        price = self.market_buy(symbol, self.position[symbol] + quantity)
+                        self.position[symbol] = quantity
+                        self.balance = self.balance - price * (self.position[symbol] + quantity)
+                    else:
+                        print('Not enough Money!')
+
+                elif self.position[symbol] == 0:
+                    if self.balance > (quantity + 1) * self.klines[symbol]["c"]:
+                        price = self.market_buy(symbol, qty = quantity)
+                        self.position[symbol] = self.position[symbol] + quantity
+                        self.balance = self.balance - price * (quantity)
+                    else:
+                        print('Not enough Money!')
+
+                elif self.position[symbol] > 0:
+                    return
+
+            elif self.klines[symbol]["c"] < sell_line:
+                # if long position:
+                if self.position[symbol] > 0:
+                    price = self.market_sell(symbol, self.position[symbol] + quantity)
+                    self.position[symbol] = -quantity
+                    self.balance = self.balance + price * (self.position[symbol] + quantity)
+
+                elif self.position[symbol] == 0:
+                    price = self.market_sell(symbol, qty = quantity)
+                    self.position[symbol] = self.position[symbol] - quantity
+                    self.balance = self.balance + price * (quantity)
+
+                elif self.position[symbol] < 0:
+                    return
+
+    def strategy_R_Breaker(self, n: int, quantity: int):
+        '''
+        we don't use the prices last day, we use the prices of history n minutes.
+        '''
+        self.update_data()
+
+        for symbol in self.symbols:
+            # get the mean close price
+            use_klines = self.kline_history[symbol][-n:]
+            high = max([kline["h"] for kline in use_klines])
+            low = min([kline["l"] for kline in use_klines])
+            close = self.klines[symbol]["c"]
+            pivot = (high + low + close) / 3
+            buyBreak = high + 2 * (pivot - low)
+            sellSetup = pivot + (high - low)
+            turnToShort = 2 * pivot - low
+            turnToLong = 2 * pivot - high
+            buySetup = pivot - (high - low)
+            sellBreak = low - 2 * (high - pivot)
+
+            # not long or short position : trend strategy
+            if self.position[symbol] == 0:
+                if self.klines[symbol]["c"] > buyBreak:
+                    if self.balance > (quantity + 1) * self.klines[symbol]["c"]:
+                        price = self.market_buy(symbol, qty = quantity)
+                        self.position[symbol] = self.position[symbol] + quantity
+                        self.balance = self.balance - price * (quantity)
+                    else:
+                        print('Not enough Money!')
+
+                elif self.klines[symbol]["c"] < sellBreak:
+                    price = self.market_sell(symbol, qty = quantity)
+                    self.position[symbol] = self.position[symbol] - quantity
+                    self.balance = self.balance + price * (quantity)
+
+            # long or short position: reversal strategy
+            elif self.position[symbol] > 0:
+                if (self.klines[symbol]["h"] > sellSetup) and (self.klines[symbol]["c"] < turnToShort):
+                    # short signal
+                    price = self.market_sell(symbol, self.position[symbol] + quantity)
+                    self.position[symbol] = -quantity
+                    self.balance = self.balance + price * (self.position[symbol] + quantity)
+
+            elif self.position[symbol] < 0:
+                if (self.klines[symbol]["l"] < buySetup) and (self.klines[symbol]["c"] > turnToLong):
+                    if self.balance > (self.position[symbol] + quantity + 1) * self.klines[symbol]["c"]:
+                        price = self.market_buy(symbol, self.position[symbol] + quantity)
+                        self.position[symbol] = quantity
+                        self.balance = self.balance - price * (self.position[symbol] + quantity)
+                    else:
+                        print('Not enough Money!')
 
     def start(self):
         while True:
