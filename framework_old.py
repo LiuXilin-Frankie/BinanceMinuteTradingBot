@@ -73,7 +73,7 @@ class BinanceTradingBot:
             # return order_info['orderId']
             actually_trade = self.client.aggregate_trade_iter(symbol=symbol)
             actually_trade = next(actually_trade)['p']
-            return actually_trade
+            return float(actually_trade)
         else:
             time.sleep(0.1)
             return False
@@ -92,7 +92,7 @@ class BinanceTradingBot:
             # return order_info['orderId']
             actually_trade = self.client.aggregate_trade_iter(symbol=symbol)
             actually_trade = next(actually_trade)['p']
-            return actually_trade
+            return float(actually_trade)
         else:
             time.sleep(0.1)
             return False
