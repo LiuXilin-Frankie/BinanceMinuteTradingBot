@@ -61,6 +61,7 @@ class MyTradingBot(BinanceTradingBot):
         """
         define your strategy here
         """
+        time.sleep(1)
         self.strategy_DualMA(20,5)
         pass
 
