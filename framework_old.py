@@ -34,6 +34,7 @@ class BinanceTradingBot:
             if s['status']!='TRADING': continue
             # 更新交易所基本信息
             symbol = s['symbol']
+            #print(s)
             self.symbol_info[symbol] = dict()
             self.symbol_info[symbol]['baseAsset'] = s['baseAsset']
             self.symbol_info[symbol]['quoteAsset'] = s['quoteAsset']  # 用于标价的资产
@@ -44,7 +45,8 @@ class BinanceTradingBot:
             self.symbol_info[symbol]['tickSize'] = s['filters'][0]['tickSize']
             self.symbol_info[symbol]['minQty'] = s['filters'][1]['minQty']
             self.symbol_info[symbol]['stepSize'] = s['filters'][1]['stepSize']
-            self.symbol_info[symbol]['minNotional'] = s['filters'][2]['minNotional']
+            try: self.symbol_info[symbol]['minNotional'] = s['filters'][2]['minNotional']
+            except: self.symbol_info[symbol]['minNotional'] = '0.000100'
 
         # Init to accept websocket of Individual Symbol klines
         ### 创建用于接收kline数据的类
