@@ -53,8 +53,8 @@ class MyTradingBot(BinanceTradingBot):
             prc = new_kline
             self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
 
-        if self.position[symbol] != 0.0001:
-            print('NetValue is:', self.NetValue)
+            if self.position[symbol] != 0.0001:
+                print('NetValue is:', self.NetValue)
 
     def strategy(self):
         """
@@ -183,7 +183,7 @@ class MyTradingBot(BinanceTradingBot):
 
     def strategy_R_Breaker(self, n1: int, n2: int, quantity: int):
         '''
-        
+
         we don't use the prices last day, we use the prices of T-n1-n2 ~ T-n2-1 history minute bars.
 
         :params n1: use T-n1-n2 ~ T-n2-1 history minute bars (n1 in total) as the baselines to generate the range
