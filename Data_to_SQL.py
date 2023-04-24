@@ -16,8 +16,8 @@ db = pymysql.connect(host = '127.0.0.1', user = 'root', passwd = 'root')
 cursor = db.cursor()
 
 # create the database
-# sql1 = "create database CryptoCurrency;"
-# cursor.execute(sql1)
+sql1 = "create database CryptoCurrency;"
+cursor.execute(sql1)
 
 engine = create_engine('mysql+pymysql://root:root@localhost:3306/CryptoCurrency?charset-utf-8')
 
