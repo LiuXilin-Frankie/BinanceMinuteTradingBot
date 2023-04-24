@@ -26,7 +26,9 @@ class MyTradingBot(BinanceTradingBot):
         self.symbols = symbols
         self.balance = 1000000  # default is usdt
         self.position = {}
-        for symbol in symbols:  self.position[symbol] = 0
+        self.NetValue = self.balance
+        for symbol in symbols:
+            self.position[symbol] = 0.0001
 
         ### this is your self-defined parameters
         self.kline_history = {}
@@ -39,23 +41,28 @@ class MyTradingBot(BinanceTradingBot):
         但是无法获取到历史的，这样写的目的是防止self.klines中的k线数据一味append导致内存过载
         请在这里写下您的历史数据记录函数，帮助您判断是否需要交易
         """
+        self.NetValue = self.balance
         for symbol in self.symbols:
             new_kline = self.klines[symbol]
             if new_kline not in self.kline_history[symbol]:
                 self.kline_history[symbol].append(new_kline)
                 # 同样防止内存过载，我们只记录20次历史数据
                 self.kline_history[symbol] = self.kline_history[symbol][-20:]
-                print('add new kline for', symbol)
+                #print('add new kline for', symbol)
+
+            prc = new_kline
+            self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
+
+        if self.position[symbol] != 0.0001:
+            print('NetValue is:',self.NetValue)
+
 
     def strategy(self):
         """
         define your strategy here
         """
-        self.update_data()
-        # sig = xxxxx
-
-        # if exist sig:
-        # trade_prc = self.market_buy(symbol,qty)
+        time.sleep(1)
+        self.strategy_DualMA(20,5)
         pass
 
     def strategy_DualMA(self, long_term: int, short_term: int, quantity = 1):
@@ -67,12 +74,12 @@ class MyTradingBot(BinanceTradingBot):
 
         for symbol in self.symbols:
             # get the mean close price
-            short_term_mean_now = sum([kline["c"] for kline in self.kline_history[symbol][-short_term:]]) / short_term
-            long_term_mean_now = sum([kline["c"] for kline in self.kline_history[symbol][-long_term:]]) / long_term
+            short_term_mean_now = sum([float(kline['k']["c"]) for kline in self.kline_history[symbol][-short_term:]]) / short_term
+            long_term_mean_now = sum([float(kline['k']["c"]) for kline in self.kline_history[symbol][-long_term:]]) / long_term
             short_term_mean_last_minute = sum([
-                kline["c"] for kline in self.kline_history[symbol][-short_term - 1:-1]]) / short_term
+                float(kline['k']["c"]) for kline in self.kline_history[symbol][-short_term - 1:-1]]) / short_term
             long_term_mean_last_minute = sum(
-                [kline["c"] for kline in self.kline_history[symbol][-long_term - 1:-1]]) / long_term
+                [float(kline['k']["c"]) for kline in self.kline_history[symbol][-long_term - 1:-1]]) / long_term
 
             if (short_term_mean_now > long_term_mean_now) and (
                     long_term_mean_last_minute > short_term_mean_last_minute):
@@ -80,7 +87,7 @@ class MyTradingBot(BinanceTradingBot):
                 if self.position[symbol] < 0:
                     # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
 
-                    if self.balance > (self.position[symbol] + quantity + 1) * self.klines[symbol]["c"]:
+                    if self.balance > (self.position[symbol] + quantity + 1) * self.klines[symbol]['k']["c"]:
                         price = self.market_buy(symbol, self.position[symbol] + quantity)
                         self.position[symbol] = quantity
                         self.balance = self.balance - price * (self.position[symbol] + quantity)
@@ -88,10 +95,10 @@ class MyTradingBot(BinanceTradingBot):
                         print('Not enough Money!')
 
                 elif self.position[symbol] == 0:
-                    if self.balance > (quantity + 1) * self.klines[symbol]["c"]:
+                    if self.balance > (quantity + 1) * self.klines[symbol]['k']["c"]:
                         price = self.market_buy(symbol, qty = quantity)
                         self.position[symbol] = self.position[symbol] + quantity
-                        self.balance = self.balance - price * quantity
+                        self.balance = self.balance - price * (quantity)
                     else:
                         print('Not enough Money!')
 
@@ -109,30 +116,30 @@ class MyTradingBot(BinanceTradingBot):
                 elif self.position[symbol] == 0:
                     price = self.market_sell(symbol, qty = quantity)
                     self.position[symbol] = self.position[symbol] - quantity
-                    self.balance = self.balance + price * quantity
+                    self.balance = self.balance + price * (quantity)
 
                 elif self.position[symbol] < 0:
                     return
 
-    def strategy_DualThrust(self, n1: int, n2: int, k1: float, k2: float, quantity: int):
+    def strategy_Dual_Thrust(self, n: int, k1: float, k2: float, quantity: int):
         '''
-        :params n1: use T-n1-n2 ~ T-n2-1 history minute bars (n1 in total) as the baselines to generate the range
-        :params n2: use T-n2 history minute bar's open price to generate the signal
+        :params n: use n history minute bar
         :params k1: parameter for the buy line
         :params k2: parameter for the sell line
         '''
 
-        self.update_data()
+        #self.update_data()
 
         for symbol in self.symbols:
-            use_klines = self.kline_history[symbol][-n1 - n2:-n2]
+            # get the mean close price
+            use_klines = self.kline_history[symbol][-n:]
             HH = max([kline["h"] for kline in use_klines])
             HC = max([kline["c"] for kline in use_klines])
             LC = min([kline["c"] for kline in use_klines])
             LL = min([kline["l"] for kline in use_klines])
             range = max(HH - LC, HC - LL)
-            buy_line = self.kline_history[symbol][-n2]["o"] + range * k1
-            sell_line = self.kline_history[symbol][-n2]["o"] - range * k2
+            buy_line = self.klines[symbol]["o"] + range * k1
+            sell_line = self.klines[symbol]["o"] - range * k2
 
             if self.klines[symbol]["c"] > buy_line:
                 # if short position:
@@ -149,7 +156,7 @@ class MyTradingBot(BinanceTradingBot):
                     if self.balance > (quantity + 1) * self.klines[symbol]["c"]:
                         price = self.market_buy(symbol, qty = quantity)
                         self.position[symbol] = self.position[symbol] + quantity
-                        self.balance = self.balance - price * quantity
+                        self.balance = self.balance - price * (quantity)
                     else:
                         print('Not enough Money!')
 
@@ -166,26 +173,23 @@ class MyTradingBot(BinanceTradingBot):
                 elif self.position[symbol] == 0:
                     price = self.market_sell(symbol, qty = quantity)
                     self.position[symbol] = self.position[symbol] - quantity
-                    self.balance = self.balance + price * quantity
+                    self.balance = self.balance + price * (quantity)
 
                 elif self.position[symbol] < 0:
                     return
 
-    def strategy_R_Breaker(self, n1: int, n2: int, quantity: int):
+    def strategy_R_Breaker(self, n: int, quantity: int):
         '''
-        we don't use the prices last day, we use the prices of T-n1-n2 ~ T-n2-1 history minute bars.
-
-        :params n1: use T-n1-n2 ~ T-n2-1 history minute bars (n1 in total) as the baselines to generate the range
-        :params n2: use T-n2~T history minute bars to compare with the range
-
+        we don't use the prices last day, we use the prices of history n minutes.
         '''
         self.update_data()
 
         for symbol in self.symbols:
-            use_klines = self.kline_history[symbol][-n1 - n2:-n2]
+            # get the mean close price
+            use_klines = self.kline_history[symbol][-n:]
             high = max([kline["h"] for kline in use_klines])
             low = min([kline["l"] for kline in use_klines])
-            close = self.kline_history[symbol][-n2 - 1]["c"]
+            close = self.klines[symbol]["c"]
             pivot = (high + low + close) / 3
             buyBreak = high + 2 * (pivot - low)
             sellSetup = pivot + (high - low)
@@ -199,28 +203,26 @@ class MyTradingBot(BinanceTradingBot):
                 if self.klines[symbol]["c"] > buyBreak:
                     if self.balance > (quantity + 1) * self.klines[symbol]["c"]:
                         price = self.market_buy(symbol, qty = quantity)
-                        self.position[symbol] = quantity
-                        self.balance = self.balance - price * quantity
+                        self.position[symbol] = self.position[symbol] + quantity
+                        self.balance = self.balance - price * (quantity)
                     else:
                         print('Not enough Money!')
 
                 elif self.klines[symbol]["c"] < sellBreak:
                     price = self.market_sell(symbol, qty = quantity)
-                    self.position[symbol] = - quantity
-                    self.balance = self.balance + price * quantity
+                    self.position[symbol] = self.position[symbol] - quantity
+                    self.balance = self.balance + price * (quantity)
 
             # long or short position: reversal strategy
             elif self.position[symbol] > 0:
-                if (max(kline["h"] for kline in self.kline_history[symbol][-n2:]) > sellSetup) and (
-                        self.klines[symbol]["c"] < turnToShort):
+                if (self.klines[symbol]["h"] > sellSetup) and (self.klines[symbol]["c"] < turnToShort):
                     # short signal
                     price = self.market_sell(symbol, self.position[symbol] + quantity)
                     self.position[symbol] = -quantity
                     self.balance = self.balance + price * (self.position[symbol] + quantity)
 
             elif self.position[symbol] < 0:
-                if (min(kline["l"] for kline in self.klines[symbol]["l"]) < buySetup) and (
-                        self.klines[symbol]["c"] > turnToLong):
+                if (self.klines[symbol]["l"] < buySetup) and (self.klines[symbol]["c"] > turnToLong):
                     if self.balance > (self.position[symbol] + quantity + 1) * self.klines[symbol]["c"]:
                         price = self.market_buy(symbol, self.position[symbol] + quantity)
                         self.position[symbol] = quantity
@@ -263,7 +265,6 @@ if __name__ == "__main__":
     def update_klines_dict(msg):
         BMMB.klines[msg['s']] = msg
 
-
     bm = ThreadedWebsocketManager(api_key = api_key, api_secret = secret_key)
     bm.start()
     for symbol in symbols:
@@ -271,4 +272,5 @@ if __name__ == "__main__":
     time.sleep(2)  # wait for initialize
 
     print('start bot')
+    time.sleep(5)
     BMMB.start()
