@@ -35,6 +35,10 @@ for use_frequency in [x.split('.')[0] for x in os.listdir(history_data_path)]:  
             data.to_sql(use_frequency, con = engine, dtype = dtype_dict, if_exists = 'append', index = False)
 
 # need to be soloved later:some error from duplicated data: IntegrityError: (1062, "Duplicate entry 'LTCUSDT-2021-04-25 12:01:00' for key '1m.PRIMARY'")
+'''
+发现那天12:00:59有一个数据。12:01:00有一个数据，并且12点之后的数据到了16：45，可能数据不全
+'''
+
 # cursor.execute('alter table CryptoCurrency.1m add primary key(code,time);')
 # cursor.execute('alter table CryptoCurrency.5m add primary key(code,time);')
 cursor.close()
