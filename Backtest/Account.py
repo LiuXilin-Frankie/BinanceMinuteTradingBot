@@ -28,7 +28,7 @@ class Account:
         #     columns = ['code', 'buy_price', 'buy_time', 'buy_num', 'sell_price', 'sell_time', 'sell_num'])
 
     def buy(self, buy_time, symbol, buy_price, buy_num):
-        if symbol not in self.position.keys():
+        if symbol not in self.buy_time.keys():
             self.position[symbol] = buy_num
             self.buy_price[symbol] = []
             self.buy_price[symbol].append(buy_price)
@@ -42,7 +42,7 @@ class Account:
         self.balance -= buy_price * buy_num * (1 + self.buy_cost_rate)
 
     def sell(self, sell_time, symbol, sell_price, sell_num):
-        if symbol not in self.position.keys():
+        if symbol not in self.sell_time.keys():
             self.position[symbol] = -sell_num
             self.sell_price[symbol] = []
             self.sell_price[symbol].append(sell_price)
