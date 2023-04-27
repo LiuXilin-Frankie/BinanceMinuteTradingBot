@@ -5,11 +5,10 @@ from abc import abstractmethod, ABCMeta
 import datetime
 
 # could be changed
-trading_symbols = ['ADAUSDT', 'BATUSDT', 'BNBUSDT', 'BTCUSDT']
+trading_symbols = ['ADAUSDT', 'BATUSDT', 'BNBUSDT']
 start_time = '2021-01-14 08:00:00'
 end_time = '2021-01-14 12:02:00'
 
-account = Account(balance_init = 100000, start_time = start_time, end_time = end_time)
 use_frequency = '1m'
 
 # get history kline to backtest
@@ -19,39 +18,53 @@ history_kline = dc.kline_history_backtest
 
 
 class Strategy_BackTest(metaclass = ABCMeta):
-    def __init__(self, start_time: datetime.datetime, end_time: datetime.datetime, trading_symbols: List, balance_init):
+    def __init__(self, start_time: datetime.datetime, end_time: datetime.datetime, trading_symbols: List,
+                 account: Account,
+                 delay_min: int):
         self.symbols = trading_symbols
         self.start_time = start_time
         self.end_time = end_time
-        self.account = Account(balance_init = balance_init, start_time = start_time, end_time = end_time)
+        self.account = account
+        self.delay_min = delay_min  # signal generated at T and trade at T+delay_min
 
     @abstractmethod
-    def run(self):
+    def start_run(self):
         pass
+
+    @abstractmethod
+    def rerun_from_stop(self, stop_time: datetime.datetime, stop_time_length_min: int):
+        pass
+
+
+class BackTest:
+    def run_strategy(self, strategy, stop_time_length_min: int):
+        status, time = strategy.start_run()
+        while status == -1:
+            status, time = strategy.rerun_from_stop(time, stop_time_length_min)
 
 
 #
 class strategy_DualMA(Strategy_BackTest):
-    def __init__(self, start_time: datetime.datetime, end_time: datetime.datetime, trading_symbols: List, balance_init,
-                 long_term: int,
-                 short_term: int, quantity = 1):
+    def __init__(self, start_time: datetime.datetime, end_time: datetime.datetime, trading_symbols: List,
+                 account: Account, long_term: int, short_term: int, delay_min = 1, quantity = 1):
         '''
 
         Dual MA strategy: if MA(short term)> MA(long term), then long the symbol else short
         if signal occurs then net short or long quantity unit symbol
         '''
-        super().__init__(start_time, end_time, trading_symbols, balance_init)
+        super().__init__(start_time, end_time, trading_symbols, account, delay_min)
         self.long_term = long_term
         self.short_term = short_term
         self.quantity = quantity
         for symbol in self.symbols:
             self.account.position[symbol] = 0
 
-    def run(self):
+    def start_run(self):
         for date_time in history_kline.keys():
             if date_time >= self.start_time and date_time <= self.end_time:
                 print(date_time)
-                if self.account.Check_Warning(date_time, dc) == True:
+                signal = self.account.Check_Warning(date_time, dc)
+                if signal == True:
                     index = list(history_kline.keys()).index(date_time)
                     for symbol in self.symbols:
                         # get the mean close price
@@ -78,7 +91,7 @@ class strategy_DualMA(Strategy_BackTest):
 
                                 if self.account.balance > (self.account.position[symbol] + self.quantity + 1) * float(
                                         history_kline[date_time][symbol]['k']["c"]):
-                                    buy_price, buy_time = dc.get_market_price_trade(time = date_time, symbol = symbol)
+                                    buy_price, buy_time = dc.get_market_price_trade(date_time, symbol, self.delay_min)
                                     self.account.buy(date_time, symbol, buy_price,
                                                      self.quantity + self.account.position[symbol])
                                 else:
@@ -87,37 +100,50 @@ class strategy_DualMA(Strategy_BackTest):
                             elif self.account.position[symbol] == 0:
                                 if self.account.balance > (self.quantity + 1) * float(
                                         history_kline[date_time][symbol]['k']["c"]):
-                                    buy_price, buy_time = dc.get_market_price_trade(time = date_time, symbol = symbol)
+                                    buy_price, buy_time = dc.get_market_price_trade(date_time, symbol, self.delay_min)
                                     self.account.buy(date_time, symbol, buy_price, self.quantity)
                                 else:
                                     print('Not enough Money!')
 
-                            elif self.account.position[symbol] > 0:
-                                return
 
                         elif (short_term_mean_now < long_term_mean_now) and (
                                 long_term_mean_last_minute < short_term_mean_last_minute):
                             # if long position:
                             if self.account.position[symbol] > 0:
-                                sell_price, sell_time = dc.get_market_price_trade(time = date_time, symbol = symbol)
+                                sell_price, sell_time = dc.get_market_price_trade(date_time, symbol, self.delay_min)
                                 self.account.sell(date_time, symbol, sell_price,
                                                   self.quantity + self.account.position[symbol])
 
                             elif self.account.position[symbol] == 0:
-                                sell_price, sell_time = dc.get_market_price_trade(time = date_time, symbol = symbol)
+                                sell_price, sell_time = dc.get_market_price_trade(date_time, symbol, self.delay_min)
                                 self.account.sell(date_time, symbol, sell_price, self.quantity)
 
-                            elif self.account.position[symbol] < 0:
-                                return
-                elif self.account.Check_Warning(date_time, dc) == 0:
+                    continue
+                elif signal == -1:
+                    self.account.close_position(date_time, dc, signal, self.delay_min)
                     break
+                elif signal == 1:
+                    self.account.close_position(date_time, dc, signal, self.delay_min)
+                    break
+            if date_time == self.end_time:  # test done
+                return 0, date_time
+
+        return -1, date_time  # reach stop line
+
+    def rerun_from_stop(self, stop_time: datetime.datetime, stop_time_length_min: int):
+        self.start_time = stop_time + datetime.timedelta(minutes = stop_time_length_min)
+        return self.start_run()
 
 
+account = Account(balance_init = 100000, start_time = datetime.datetime(2021, 1, 14, 9, 00),
+                  end_time = datetime.datetime(2021, 1, 14, 11, 00), stop_loss_rate = -0.1, stop_profit_rate = 0.2)
 a = strategy_DualMA(start_time = datetime.datetime(2021, 1, 14, 9, 00),
                     end_time = datetime.datetime(2021, 1, 14, 11, 00),
-                    trading_symbols = trading_symbols[-1:], balance_init = 1000000, long_term = 20, short_term = 5,
+                    trading_symbols = trading_symbols[0:3], account = account, long_term = 20, short_term = 5,
+                    delay_min = 1,
                     quantity = 1)
-a.run()
+# a.start_run()
+BackTest().run_strategy(a, 40)
 
 #
 # def strategy_DualThrust(self, n1: int, n2: int, k1: float, k2: float, quantity: int):

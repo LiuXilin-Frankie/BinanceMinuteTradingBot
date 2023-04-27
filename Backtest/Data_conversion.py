@@ -62,7 +62,7 @@ class Data_conversion():
         if at time T generate the buy or sell signal, then buy or sell at T+n at its close price
         return the trading price and trading time
 
-        :params n: trade at T+n minute
+        :params n: consider the delay, trading at T+n minute
         '''
         try:
             price = float(self.kline_history_backtest[time + datetime.timedelta(minutes = n)][symbol]["k"]["c"])
