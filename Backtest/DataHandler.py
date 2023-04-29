@@ -1,5 +1,4 @@
 import datetime
-
 import pandas as pd
 import pymysql
 import datetime
@@ -23,8 +22,6 @@ class DataHandler():
         self.symbols = symbols
         self.datetimelist = []
         self.datetimeiter = iter([])
-        # for symbol in self.symbols:
-        #     self.latest_data[symbol] = []
 
     def get_all_data(self, use_frequency: str, start_time: str, end_time: str):
 

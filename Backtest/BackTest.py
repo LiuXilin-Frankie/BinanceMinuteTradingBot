@@ -8,20 +8,21 @@ from Strategy_BackTest import *
 
 
 class BackTest:
-    def __init__(self, strategy, order_execution_handler, stop_time_length_min: int):
+    def __init__(self, strategy, order_execution_handler: OrderExecutionHandler, stop_time_length_min: int):
+
         self.strategy = strategy
         self.order_execution_handler = order_execution_handler
-        self.stop_time_length_min = stop_time_length_min
+        self.stop_time_length_min = stop_time_length_min # if the strategy reach the profit or loss line, then stop for stop_time_length_min minutes
 
     def run_strategy(self):
         while True:
             if self.strategy.continue_backtest:
                 order, time, warning_signal = self.strategy.start_run()
                 print(order)
-                if time == None:  #
+                if time == None:  # means already reach the end date of the backtest
                     self.strategy.continue_backtest = False
                     break
-                elif order != {}:
+                elif order != {}: # means having order to be sent
                     self.order_execution_handler.execute(order, time, warning_signal)
             else:
                 if self.rerun_from_stop() != None:
@@ -69,4 +70,3 @@ class BackTest:
 # order_execution_handler = OrderExecutionHandler(dc, account, delay_min = 1)
 # BackTest(a, order_execution_handler, 20).run_strategy()
 #
-

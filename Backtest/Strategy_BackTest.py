@@ -4,6 +4,10 @@ from typing import List
 from abc import abstractmethod, ABCMeta
 import datetime
 
+'''
+There are 3 strategies here temporarily: DualMA, DualThrust, and R_Breaker inherited from
+Strategy_BackTest object, and they would send orders through method start run
+'''
 
 class Strategy_BackTest(metaclass = ABCMeta):
     def __init__(self, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,

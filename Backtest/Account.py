@@ -73,6 +73,10 @@ class Account:
         return self.netValue
 
     def Check_Warning(self, time: datetime.datetime, dh:DataHandler):
+        '''
+        check if reach the profit or loss line
+        '''
+
         self.update_net_value(time, dh)
         if self.netValue < self.balance_init * (1 + self.stop_loss_rate):
             print("Reach the stop loss line. Stop trading!")
@@ -87,7 +91,7 @@ class Account:
 
     def close_position(self):
         '''
-        send order to close out all the postions
+        send order to close out all the positions
         '''
 
         order = {}
