@@ -1,12 +1,11 @@
 import datetime
 from pandas import DataFrame
-import numpy as np
-import pandas as pd
+from DataHandler import DataHandler
 
 
 class Account:
     def __init__(self, balance_init, start_time, end_time, buy_cost_rate = 0, sell_cost_rate = 0,
-                 stop_loss_rate = -0.03,stop_profit_rate = 0.05):
+                 stop_loss_rate = -0.03, stop_profit_rate = 0.05):
 
         self.balance_init = balance_init
         self.balance = balance_init  # initial balance
@@ -73,8 +72,8 @@ class Account:
         self.netValue = self.balance + self.position_value
         return self.netValue
 
-    def Check_Warning(self, time: datetime.datetime, dc):
-        self.update_net_value(time, dc)
+    def Check_Warning(self, time: datetime.datetime, dh:DataHandler):
+        self.update_net_value(time, dh)
         if self.netValue < self.balance_init * (1 + self.stop_loss_rate):
             print("Reach the stop loss line. Stop trading!")
             return -1
@@ -84,31 +83,25 @@ class Account:
             return 1
 
         else:
-            return True
+            return None
 
-    def close_position(self, time, dc, signal: int, n: int = 1):
+    def close_position(self):
         '''
-        close all the position, and return the remain balance
-
-        :params signal: 1 is stop from profit and -1 is stop from loss
-        :params n: consider the delay, trading at T+n minute
+        send order to close out all the postions
         '''
-        operation_time = time + datetime.timedelta(minutes = n) # trade done at this time, not the signal generation time
-        if signal == 1:
-            self.stop_profit_time.append(operation_time)
-        elif signal == -1:
-            self.stop_loss_time.append(operation_time)
 
+        order = {}
+        for symbol in self.position.keys():
+            order[symbol] = {}
         for symbol in self.position.keys():
             if self.position[symbol] > 0:
-                sell_price, sell_time = dc.get_market_price_trade(time, symbol, n)
-                self.sell(sell_time, symbol, sell_price, self.position[symbol])
+                order[symbol]['action'] = 'Short'
+                order[symbol]['quantity'] = self.position[symbol]
             elif self.position[symbol] < 0:
-                buy_price, buy_time = dc.get_market_price_trade(time, symbol, n)
-                self.buy(buy_time, symbol, buy_price, -self.position[symbol])
+                order[symbol]['action'] = 'Long'
+                order[symbol]['quantity'] = -self.position[symbol]
 
-        self.update_net_value(operation_time, dc)
-        return self.balance
+        return order
 
-    def get_all_trading_info(self) -> DataFrame :
+    def get_all_trading_info(self) -> DataFrame:
         pass

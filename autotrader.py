@@ -223,7 +223,7 @@ class MyTradingBot(BinanceTradingBot):
 
             # long or short position: reversal strategy
             elif self.position[symbol] > 0:
-                if (max(float(kline["k"]["h"]) for kline in self.kline_history[symbol][-n2:]) > sellSetup) and (
+                if (max([float(kline["k"]["h"]) for kline in self.kline_history[symbol][-n2:]]) > sellSetup) and (
                         float(self.klines[symbol]["k"]["c"]) < turnToShort):
                     # short signal
                     price = self.market_sell(symbol, self.position[symbol] + quantity)
@@ -231,7 +231,7 @@ class MyTradingBot(BinanceTradingBot):
                     self.balance = self.balance + price * (self.position[symbol] + quantity)
 
             elif self.position[symbol] < 0:
-                if (min(float(kline["k"]["l"]) for kline in self.kline_history[symbol][-n2:]) < buySetup) and (
+                if (min([float(kline["k"]["l"]) for kline in self.kline_history[symbol][-n2:]]) < buySetup) and (
                         float(self.klines[symbol]["k"]["c"]) > turnToLong):
                     if self.balance > (self.position[symbol] + quantity + 1) * float(self.klines[symbol]["k"]["c"]):
                         price = self.market_buy(symbol, self.position[symbol] + quantity)
