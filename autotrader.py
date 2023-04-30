@@ -158,7 +158,7 @@ class MyTradingBot(BinanceTradingBot):
                     if self.balance > (quantity + 1) * float(self.klines[symbol]["k"]["c"]):
                         price = self.market_buy(symbol, qty = quantity)
                         self.balance = self.balance - price * quantity
-                        self.position[symbol] = self.position[symbol] + quantity
+                        self.position[symbol] = quantity
                     else:
                         print('Not enough Money!')
 
