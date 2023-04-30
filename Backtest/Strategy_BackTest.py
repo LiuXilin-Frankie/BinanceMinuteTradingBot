@@ -9,6 +9,7 @@ There are 3 strategies here temporarily: DualMA, DualThrust, and R_Breaker inher
 Strategy_BackTest object, and they would send orders through method start run
 '''
 
+
 class Strategy_BackTest(metaclass = ABCMeta):
     def __init__(self, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
                  trading_symbols: List, account: Account):
@@ -26,6 +27,16 @@ class Strategy_BackTest(metaclass = ABCMeta):
 
         # initial status
         self.continue_backtest = True
+
+        # 
+        for symbol in self.symbols:
+            self.account.position[symbol] = 0
+            self.account.buy_time[symbol] = []
+            self.account.buy_num[symbol] = []
+            self.account.buy_price[symbol] = []
+            self.account.sell_time[symbol] = []
+            self.account.sell_num[symbol] = []
+            self.account.sell_price[symbol] = []
 
     @abstractmethod
     def start_run(self):
@@ -45,9 +56,6 @@ class strategy_DualMA(Strategy_BackTest):
         self.long_term = long_term
         self.short_term = short_term
         self.quantity = quantity
-        for symbol in self.symbols:
-            self.account.position[symbol] = 0
-
         # first update data in order to get signal
         for i in range(self.long_term * 2):
             self.dh.update_data()
@@ -81,11 +89,11 @@ class strategy_DualMA(Strategy_BackTest):
                         if self.account.position[symbol] < 0:
                             # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
 
-                            if self.account.balance > (self.account.position[symbol] + self.quantity + 1) * \
+                            if self.account.balance > (-self.account.position[symbol] + self.quantity + 1) * \
                                     use_kline_history[symbol][-1]['k']["c"]:
                                 order[symbol] = {}
                                 order[symbol]['action'] = self.long_action
-                                order[symbol]['quantity'] = self.quantity + self.account.position[symbol]
+                                order[symbol]['quantity'] = self.quantity - self.account.position[symbol]
                             else:
                                 print('Not enough Money!')
                                 return {}, date_time, warning_signal
@@ -139,9 +147,6 @@ class strategy_DualThrust(Strategy_BackTest):
         self.k1 = k1
         self.k2 = k2
         self.quantity = quantity
-        for symbol in self.symbols:
-            self.account.position[symbol] = 0
-
         # first update data in order to get signal
         for i in range((self.n1 + self.n2) * 2):
             self.dh.update_data()
@@ -170,11 +175,11 @@ class strategy_DualThrust(Strategy_BackTest):
                         # if short position:
                         if self.account.position[symbol] < 0:
                             # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
-                            if self.account.balance > (self.account.position[symbol] + self.quantity + 1) * \
+                            if self.account.balance > (-self.account.position[symbol] + self.quantity + 1) * \
                                     use_kline_history[symbol][-1]["k"]["c"]:
                                 order[symbol] = {}
                                 order[symbol]['action'] = self.long_action
-                                order[symbol]['quantity'] = self.quantity + self.account.position[symbol]
+                                order[symbol]['quantity'] = self.quantity - self.account.position[symbol]
 
                             else:
                                 print('Not enough Money!')
@@ -230,8 +235,6 @@ class strategy_R_Breaker(Strategy_BackTest):
         self.n1 = n1
         self.n2 = n2
         self.quantity = quantity
-        for symbol in self.symbols:
-            self.account.position[symbol] = 0
 
         # first update data in order to get signal
         for i in range((self.n1 + self.n2) * 2):
@@ -291,11 +294,11 @@ class strategy_R_Breaker(Strategy_BackTest):
                     elif self.account.position[symbol] < 0:
                         if (min([kline["k"]["l"] for kline in use_kline_history[symbol][-self.n2:]]) < buySetup) and (
                                 use_kline_history[symbol][-1]["k"]["c"] > turnToLong):
-                            if self.account.balance > (self.account.position[symbol] + self.quantity + 1) * \
+                            if self.account.balance > (-self.account.position[symbol] + self.quantity + 1) * \
                                     use_kline_history[symbol][-1]["k"]["c"]:
                                 order[symbol] = {}
                                 order[symbol]['action'] = self.long_action
-                                order[symbol]['quantity'] = self.quantity + self.account.position[symbol]
+                                order[symbol]['quantity'] = self.quantity - self.account.position[symbol]
 
                             else:
                                 print('Not enough Money!')

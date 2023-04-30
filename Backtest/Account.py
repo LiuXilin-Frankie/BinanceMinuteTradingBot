@@ -1,11 +1,12 @@
 import datetime
 from pandas import DataFrame
 from DataHandler import DataHandler
+import pandas as pd
 
 
 class Account:
     def __init__(self, balance_init, start_time, end_time, buy_cost_rate = 0, sell_cost_rate = 0,
-                 stop_loss_rate = -0.03, stop_profit_rate = 0.05):
+                 stop_loss_rate = -0.1, stop_profit_rate = 0.2):
 
         self.balance_init = balance_init
         self.balance = balance_init  # initial balance
@@ -26,41 +27,25 @@ class Account:
         self.sell_cost_rate = sell_cost_rate
         self.stop_loss_rate = stop_loss_rate
         self.stop_profit_rate = stop_profit_rate
+        self.netValue_time_series = {}  # record the change of netvalue
 
         # self.info = pd.DataFrame(
         #     columns = ['code', 'buy_price', 'buy_time', 'buy_num', 'sell_price', 'sell_time', 'sell_num'])
 
     def buy(self, buy_time, symbol, buy_price, buy_num):
-        if symbol not in self.buy_time.keys():
-            self.position[symbol] = buy_num
-            self.buy_num[symbol] = []
-            self.buy_num[symbol].append(buy_num)
-            self.buy_price[symbol] = []
-            self.buy_price[symbol].append(buy_price)
-            self.buy_time[symbol] = []
-            self.buy_time[symbol].append(buy_time)
-        else:
-            self.position[symbol] += buy_num
-            self.buy_num[symbol].append(buy_num)
-            self.buy_price[symbol].append(buy_price)
-            self.buy_time[symbol].append(buy_time)
+        self.position[symbol] += buy_num
+        self.buy_num[symbol].append(buy_num)
+        self.buy_price[symbol].append(buy_price)
+        self.buy_time[symbol].append(buy_time)
 
         self.balance -= buy_price * buy_num * (1 + self.buy_cost_rate)
 
     def sell(self, sell_time, symbol, sell_price, sell_num):
-        if symbol not in self.sell_time.keys():
-            self.position[symbol] = -sell_num
-            self.sell_num[symbol] = []
-            self.sell_num[symbol].append(sell_num)
-            self.sell_price[symbol] = []
-            self.sell_price[symbol].append(sell_price)
-            self.sell_time[symbol] = []
-            self.sell_time[symbol].append(sell_time)
-        else:
-            self.position[symbol] -= sell_num
-            self.sell_num[symbol].append(sell_num)
-            self.sell_price[symbol].append(sell_price)
-            self.sell_time[symbol].append(sell_time)
+
+        self.position[symbol] -= sell_num
+        self.sell_num[symbol].append(sell_num)
+        self.sell_price[symbol].append(sell_price)
+        self.sell_time[symbol].append(sell_time)
 
         self.balance += sell_price * sell_num * (1 - self.sell_cost_rate)
 
@@ -70,9 +55,10 @@ class Account:
             self.position_value = self.position[symbol] * market_price
 
         self.netValue = self.balance + self.position_value
+        self.netValue_time_series[time] = self.netValue
         return self.netValue
 
-    def Check_Warning(self, time: datetime.datetime, dh:DataHandler):
+    def Check_Warning(self, time: datetime.datetime, dh: DataHandler):
         '''
         check if reach the profit or loss line
         '''
@@ -108,4 +94,39 @@ class Account:
         return order
 
     def get_all_trading_info(self) -> DataFrame:
-        pass
+        '''
+        get trading info of all backtesting period
+        '''
+
+        # index is symbol
+        buy_time_df = pd.DataFrame(data = self.buy_time.values(), index = list(self.buy_time.keys())).stack().droplevel(
+            level = 1)
+        buy_num_df = pd.DataFrame(data = self.buy_num.values(), index = list(self.buy_time.keys())).stack().droplevel(
+            level = 1)
+        buy_price_df = pd.DataFrame(data = self.buy_price.values(),
+                                    index = list(self.buy_time.keys())).stack().droplevel(level = 1)
+        buy_info = pd.concat([buy_time_df, buy_num_df, buy_price_df], axis = 1)
+        buy_info['action'] = 'buy'
+        buy_info.columns = ['time', 'num', 'price', 'action']
+        sell_time_df = pd.DataFrame(data = self.sell_time.values(),
+                                    index = list(self.sell_time.keys())).stack().droplevel(level = 1)
+        sell_num_df = pd.DataFrame(data = self.sell_num.values(),
+                                   index = list(self.sell_time.keys())).stack().droplevel(level = 1)
+        sell_price_df = pd.DataFrame(data = self.sell_price.values(),
+                                     index = list(self.sell_time.keys())).stack().droplevel(level = 1)
+        sell_info = pd.concat([sell_time_df, sell_num_df, sell_price_df], axis = 1)
+        sell_info['action'] = 'sell'
+        sell_info.columns = ['time', 'num', 'price', 'action']
+        all_trading_info = pd.concat([buy_info, sell_info])
+        all_trading_info = all_trading_info.reset_index(drop = False).set_index('time').sort_index()
+        return all_trading_info
+
+    def get_netvalue_time_series(self) -> DataFrame:
+        '''
+        record the changing of netvalue
+        '''
+
+        df = (pd.DataFrame(index = list(self.netValue_time_series.keys()),
+                           data = self.netValue_time_series.values()).stack().droplevel(level = 1).to_frame())
+        df.columns = ['net_value']
+        return df

@@ -142,39 +142,3 @@ class DataHandler():
         except StopIteration:  # no data
             print("Backtesting done!")
             return None, None  # so if date_time is None ,means backtest done
-
-# test
-
-# symbols = ['ADAUSDT', 'BATUSDT']
-# start_time = '2021-01-14 08:00:00'
-# end_time = '2021-01-14 08:02:00'
-# use_frequency = '1m'
-#
-# dc = Data_conversion(symbols)
-# # dc.get_all_data(use_frequency, start_time, end_time)
-# dc.datetimelist = [datetime.datetime(2021, 1, 14, 8, 0), datetime.datetime(2021, 1, 14, 8, 1),
-#                    datetime.datetime(2021, 1, 14, 8, 2)]
-# dc.datetimeiter = iter(dc.datetimelist)
-# dc.kline_history_backtest = {datetime.datetime(2021, 1, 14, 8, 0): {
-#     'ADAUSDT': {'e': 'kline', 'E': datetime.datetime(2021, 1, 14, 8, 0), 's': 'ADAUSDT',
-#                 'k': {'o': '0.31254', 'h': '0.31294', 'l': '0.31225', 'c': '0.3123', 'v': '521865.3'}},
-#     'BATUSDT': {'e': 'kline', 'E': datetime.datetime(2021, 1, 14, 8, 0), 's': 'BATUSDT',
-#                 'k': {'o': '0.2499', 'h': '0.25', 'l': '0.2496', 'c': '0.2497', 'v': '4663.05'}}},
-#     datetime.datetime(2021, 1, 14, 8, 1): {
-#         'ADAUSDT': {'e': 'kline', 'E': datetime.datetime(2021, 1, 14, 8, 1), 's': 'ADAUSDT',
-#                     'k': {'o': '0.31246', 'h': '0.31388', 'l': '0.31239', 'c': '0.31378',
-#                           'v': '783492.3'}},
-#         'BATUSDT': {'e': 'kline', 'E': datetime.datetime(2021, 1, 14, 8, 1), 's': 'BATUSDT',
-#                     'k': {'o': '0.2495', 'h': '0.2559', 'l': '0.2495', 'c': '0.254',
-#                           'v': '731452.36'}}}, datetime.datetime(2021, 1, 14, 8, 2): {
-#         'ADAUSDT': {'e': 'kline', 'E': datetime.datetime(2021, 1, 14, 8, 2), 's': 'ADAUSDT',
-#                     'k': {'o': '0.31382', 'h': '0.31526', 'l': '0.31353', 'c': '0.31526', 'v': '865429.3'}},
-#         'BATUSDT': {'e': 'kline', 'E': datetime.datetime(2021, 1, 14, 8, 2), 's': 'BATUSDT',
-#                     'k': {'o': '0.2543', 'h': '0.2549', 'l': '0.2525', 'c': '0.2532', 'v': '261270.8'}}}}
-#
-# # price, trade_time = dc.get_market_price_trade(datetime.datetime(2018, 1, 14, 8, 0), symbol, 1)
-# # price_now = dc.get_market_price_now(datetime.datetime(2018, 1, 14, 8, 0), symbol)
-# for i in range(3):
-#     print(dc.update_data())
-#     print(dc.latest_data)
-#     print(dc.get_latest_use_data(dc.update_data()))
