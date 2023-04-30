@@ -90,18 +90,18 @@ class MyTradingBot(BinanceTradingBot):
                 if self.position[symbol] < 0:
                     # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
 
-                    if self.balance > (self.position[symbol] + quantity + 1) * float(self.klines[symbol]['k']["c"]):
-                        price = self.market_buy(symbol, self.position[symbol] + quantity)
+                    if self.balance > (-self.position[symbol] + quantity + 1) * float(self.klines[symbol]['k']["c"]):
+                        price = self.market_buy(symbol, -self.position[symbol] + quantity)
+                        self.balance = self.balance - price * (-self.position[symbol] + quantity)
                         self.position[symbol] = quantity
-                        self.balance = self.balance - price * (self.position[symbol] + quantity)
                     else:
                         print('Not enough Money!')
 
                 elif self.position[symbol] == 0:
                     if self.balance > (quantity + 1) * float(self.klines[symbol]['k']["c"]):
                         price = self.market_buy(symbol, qty = quantity)
-                        self.position[symbol] = self.position[symbol] + quantity
                         self.balance = self.balance - price * quantity
+                        self.position[symbol] = quantity
                     else:
                         print('Not enough Money!')
 
@@ -113,13 +113,13 @@ class MyTradingBot(BinanceTradingBot):
                 # if long position:
                 if self.position[symbol] > 0:
                     price = self.market_sell(symbol, self.position[symbol] + quantity)
-                    self.position[symbol] = -quantity
                     self.balance = self.balance + price * (self.position[symbol] + quantity)
+                    self.position[symbol] = -quantity
 
                 elif self.position[symbol] == 0:
                     price = self.market_sell(symbol, qty = quantity)
-                    self.position[symbol] = self.position[symbol] - quantity
                     self.balance = self.balance + price * quantity
+                    self.position[symbol] = - quantity
 
                 elif self.position[symbol] < 0:
                     return
@@ -147,18 +147,18 @@ class MyTradingBot(BinanceTradingBot):
                 # if short position:
                 if self.position[symbol] < 0:
                     # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
-                    if self.balance > (self.position[symbol] + quantity + 1) * float(self.klines[symbol]["k"]["c"]):
-                        price = self.market_buy(symbol, self.position[symbol] + quantity)
+                    if self.balance > (-self.position[symbol] + quantity + 1) * float(self.klines[symbol]["k"]["c"]):
+                        price = self.market_buy(symbol, -self.position[symbol] + quantity)
+                        self.balance = self.balance - price * (-self.position[symbol] + quantity)
                         self.position[symbol] = quantity
-                        self.balance = self.balance - price * (self.position[symbol] + quantity)
                     else:
                         print('Not enough Money!')
 
                 elif self.position[symbol] == 0:
                     if self.balance > (quantity + 1) * float(self.klines[symbol]["k"]["c"]):
                         price = self.market_buy(symbol, qty = quantity)
-                        self.position[symbol] = self.position[symbol] + quantity
                         self.balance = self.balance - price * quantity
+                        self.position[symbol] = self.position[symbol] + quantity
                     else:
                         print('Not enough Money!')
 
@@ -169,17 +169,16 @@ class MyTradingBot(BinanceTradingBot):
                 # if long position:
                 if self.position[symbol] > 0:
                     price = self.market_sell(symbol, self.position[symbol] + quantity)
-                    self.position[symbol] = -quantity
                     self.balance = self.balance + price * (self.position[symbol] + quantity)
+                    self.position[symbol] = -quantity
 
                 elif self.position[symbol] == 0:
                     price = self.market_sell(symbol, qty = quantity)
-                    self.position[symbol] = self.position[symbol] - quantity
                     self.balance = self.balance + price * quantity
+                    self.position[symbol] = - quantity
 
                 elif self.position[symbol] < 0:
                     return
-
 
     def strategy_R_Breaker(self, n1: int, n2: int, quantity: int):
         '''
@@ -211,15 +210,15 @@ class MyTradingBot(BinanceTradingBot):
                 if float(self.klines[symbol]["k"]["c"]) > buyBreak:
                     if self.balance > (quantity + 1) * float(self.klines[symbol]["k"]["c"]):
                         price = self.market_buy(symbol, qty = quantity)
-                        self.position[symbol] = quantity
                         self.balance = self.balance - price * quantity
+                        self.position[symbol] = quantity
                     else:
                         print('Not enough Money!')
 
                 elif float(self.klines[symbol]["k"]["c"]) < sellBreak:
                     price = self.market_sell(symbol, qty = quantity)
-                    self.position[symbol] = - quantity
                     self.balance = self.balance + price * quantity
+                    self.position[symbol] = - quantity
 
             # long or short position: reversal strategy
             elif self.position[symbol] > 0:
@@ -227,19 +226,18 @@ class MyTradingBot(BinanceTradingBot):
                         float(self.klines[symbol]["k"]["c"]) < turnToShort):
                     # short signal
                     price = self.market_sell(symbol, self.position[symbol] + quantity)
-                    self.position[symbol] = -quantity
                     self.balance = self.balance + price * (self.position[symbol] + quantity)
+                    self.position[symbol] = -quantity
 
             elif self.position[symbol] < 0:
                 if (min([float(kline["k"]["l"]) for kline in self.kline_history[symbol][-n2:]]) < buySetup) and (
                         float(self.klines[symbol]["k"]["c"]) > turnToLong):
-                    if self.balance > (self.position[symbol] + quantity + 1) * float(self.klines[symbol]["k"]["c"]):
-                        price = self.market_buy(symbol, self.position[symbol] + quantity)
+                    if self.balance > (-self.position[symbol] + quantity + 1) * float(self.klines[symbol]["k"]["c"]):
+                        price = self.market_buy(symbol, -self.position[symbol] + quantity)
+                        self.balance = self.balance - price * (-self.position[symbol] + quantity)
                         self.position[symbol] = quantity
-                        self.balance = self.balance - price * (self.position[symbol] + quantity)
                     else:
                         print('Not enough Money!')
-
 
     def start(self):
         while True:
@@ -260,7 +258,7 @@ if __name__ == "__main__":
 
     BMMB = MyTradingBot(api_key, secret_key, symbols)
     # 检测api延迟 如果延迟过高我们会直接退出程序
-    #此情况下请检查您的网络
+    # 此情况下请检查您的网络
     cnt = 0
     while cnt < 3:
         time_diff = BMMB.get_time_diff()
