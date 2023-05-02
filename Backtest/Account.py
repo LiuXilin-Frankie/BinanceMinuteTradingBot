@@ -2,6 +2,7 @@ import datetime
 from pandas import DataFrame
 from DataHandler import DataHandler
 import pandas as pd
+from Evaluation import Evaluation
 
 
 class Account:
@@ -119,6 +120,8 @@ class Account:
         sell_info.columns = ['time', 'num', 'price', 'action']
         all_trading_info = pd.concat([buy_info, sell_info])
         all_trading_info = all_trading_info.reset_index(drop = False).set_index('time').sort_index()
+        all_trading_info.rename(columns = {'index': 'code'}, inplace = True)
+
         return all_trading_info
 
     def get_netvalue_time_series(self) -> DataFrame:
@@ -126,7 +129,16 @@ class Account:
         record the changing of netvalue
         '''
 
-        df = (pd.DataFrame(index = list(self.netValue_time_series.keys()),
-                           data = self.netValue_time_series.values()).stack().droplevel(level = 1).to_frame())
-        df.columns = ['net_value']
-        return df
+        nav = (pd.DataFrame(index = list(self.netValue_time_series.keys()),
+                            data = self.netValue_time_series.values()).stack().droplevel(level = 1).to_frame())
+        nav.columns = ['net_value']
+        return nav
+
+    def get_evaluation(self, strategy_name, period_num) -> DataFrame:
+        nav = self.get_netvalue_time_series()
+        sharpe_ratio = Evaluation.get_shape_ratio(nav, period_num)
+        max_drawdown, drawdown_duration = Evaluation.get_max_drawdown(nav)
+        evaluation = pd.DataFrame(index = ['sharpe_ratio', 'max_drawdown', 'drawdown_duration'],
+                                  columns = [strategy_name], data = [sharpe_ratio, max_drawdown, drawdown_duration])
+        # evaluation.columns=['sharpe_ratio', 'max_drawdown', 'drawdown_duration']
+        return evaluation

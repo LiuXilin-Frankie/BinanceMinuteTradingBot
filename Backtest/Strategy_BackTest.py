@@ -11,8 +11,9 @@ Strategy_BackTest object, and they would send orders through method start run
 
 
 class Strategy_BackTest(metaclass = ABCMeta):
-    def __init__(self, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
+    def __init__(self, strategy_name, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
                  trading_symbols: List, account: Account):
+        self.strategy_name = strategy_name
         self.symbols = trading_symbols
         self.start_time = start_time
         self.end_time = end_time
@@ -44,7 +45,7 @@ class Strategy_BackTest(metaclass = ABCMeta):
 
 
 class strategy_DualMA(Strategy_BackTest):
-    def __init__(self, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
+    def __init__(self, strategy_name, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
                  trading_symbols: List,
                  account: Account, long_term: int, short_term: int, quantity = 1):
         '''
@@ -52,7 +53,7 @@ class strategy_DualMA(Strategy_BackTest):
         Dual MA strategy: if MA(short term)> MA(long term), then long the symbol else short
         if signal occurs then net short or long quantity unit symbol
         '''
-        super().__init__(dh, start_time, end_time, trading_symbols, account)
+        super().__init__(strategy_name, dh, start_time, end_time, trading_symbols, account)
         self.long_term = long_term
         self.short_term = short_term
         self.quantity = quantity
@@ -131,7 +132,7 @@ class strategy_DualMA(Strategy_BackTest):
 
 
 class strategy_DualThrust(Strategy_BackTest):
-    def __init__(self, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
+    def __init__(self, strategy_name, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
                  trading_symbols: List, account: Account, n1: int, n2: int, k1: float, k2: float, quantity: int):
 
         '''
@@ -141,7 +142,7 @@ class strategy_DualThrust(Strategy_BackTest):
         :params k2: parameter for the sell line
         '''
 
-        super().__init__(dh, start_time, end_time, trading_symbols, account)
+        super().__init__(strategy_name, dh, start_time, end_time, trading_symbols, account)
         self.n1 = n1
         self.n2 = n2
         self.k1 = k1
@@ -222,7 +223,7 @@ class strategy_DualThrust(Strategy_BackTest):
 
 class strategy_R_Breaker(Strategy_BackTest):
 
-    def __init__(self, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
+    def __init__(self, strategy_name, dh: DataHandler, start_time: datetime.datetime, end_time: datetime.datetime,
                  trading_symbols: List, account: Account, n1: int, n2: int, quantity: int):
         '''
         we don't use the prices last day, we use the prices of T-n1-n2 ~ T-n2-1 history minute bars.
@@ -231,7 +232,7 @@ class strategy_R_Breaker(Strategy_BackTest):
         :params n2: use T-n2~T history minute bars to compare with the range
         '''
 
-        super().__init__(dh, start_time, end_time, trading_symbols, account)
+        super().__init__(strategy_name, dh, start_time, end_time, trading_symbols, account)
         self.n1 = n1
         self.n2 = n2
         self.quantity = quantity
