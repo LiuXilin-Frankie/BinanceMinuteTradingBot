@@ -24,7 +24,7 @@ class MyTradingBot(BinanceTradingBot):
     def __init__(self, api_key, api_secret, symbols):
         super().__init__(api_key, api_secret)
         self.symbols = symbols
-        self.balance = 1000000  # default is usdt
+        self.balance = 100000  # default is usdt
         self.position = {}
         self.NetValue = self.balance
         for symbol in symbols:
@@ -52,12 +52,19 @@ class MyTradingBot(BinanceTradingBot):
 
             prc = new_kline
             self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
-
             if self.position[symbol] != 0.0001:
                 print('NetValue is:', self.NetValue)
+                print('balance is',self.balance)
+                print(self.position, new_kline['k']['c'])
+                print('\n')
+
+        ### used for logger
+        ### 用来logger记录并且GUI plot
+        ### 编写策略的人可以忽视这一部分
 
     def strategy(self):
         """
+        strategy sample
         define your strategy here
         """
         time.sleep(1)
@@ -66,7 +73,6 @@ class MyTradingBot(BinanceTradingBot):
 
     def strategy_DualMA(self, long_term: int, short_term: int, quantity = 1):
         '''
-
         Dual MA strategy: if MA(short term)> MA(long term), then long the symbol else short
         if signal occurs then net short or long quantity unit symbol
         '''
@@ -273,14 +279,16 @@ if __name__ == "__main__":
     ### callback function for start_kline_socke
     def update_klines_dict(msg):
         BMMB.klines[msg['s']] = msg
-
-
+    
+    ### connect to websocket
     bm = ThreadedWebsocketManager(api_key = api_key, api_secret = secret_key)
     bm.start()
     for symbol in symbols:
         bm.start_kline_socket(callback = update_klines_dict, symbol = symbols[0])
     time.sleep(2)  # wait for initialize
-    #
+    
+    
+    ### start our trading sys
     print('start bot')
     time.sleep(5)
     BMMB.start()

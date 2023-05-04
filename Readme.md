@@ -16,11 +16,13 @@ note: if there exists some import error when you are trying to import python-bin
 ```shell
 conda create -n BinanceTrading python=3.8
 conda activate BinanceTrading
-pip install pandas
-pip install numpy
-pip install ccxt
-pip install urllib3==1.25.8
-pip install python-binance==1.0.17
+pip install -r requirements.txt
+```
+
+After corresponding env is ready, you can simply run the sys via one command
+```shell
+conda activate BinanceTrading
+python autotrader.py
 ```
 
 ### file structure

@@ -1,0 +1,5 @@
+pandas
+numpy
+ccxt
+urllib3==1.25.8
+python-binance==1.0.17
