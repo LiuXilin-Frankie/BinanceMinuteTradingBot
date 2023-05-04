@@ -5,7 +5,7 @@ from BackTest import BackTest
 # test
 
 # could be changed
-trading_symbols = ['ADAUSDT','BATUSDT', 'BNBUSDT' ]
+trading_symbols = ['ADAUSDT', 'BATUSDT', 'BNBUSDT']
 # 'BATUSDT', 'BNBUSDT','BTCUSDT'
 start_time = '2021-01-14 08:00:00'
 end_time = '2021-01-14 12:02:00'
@@ -20,7 +20,8 @@ end_time_backtest = datetime.datetime(2021, 1, 14, 11, 50)
 
 account = Account(balance_init = 100000, start_time = start_time_backtest,
                   end_time = end_time_backtest, stop_loss_rate = -0.01, stop_profit_rate = 0.2)
-strategy = strategy_DualMA('DualMA',dh, start_time = start_time_backtest,
+
+strategy = strategy_DualMA('DualMA', dh, start_time = start_time_backtest,
                            end_time = end_time_backtest, trading_symbols = trading_symbols,
                            account = account, long_term = 10, short_term = 5, quantity = 10)
 
@@ -36,4 +37,4 @@ order_execution_handler = OrderExecutionHandler(dh, account, delay_min = 1)
 BackTest(strategy, order_execution_handler, 20).run_strategy()
 netvalue = strategy.account.get_netvalue_time_series()
 trading_info = strategy.account.get_all_trading_info()
-eval=account.get_evaluation(strategy.strategy_name,365*24*60)
+eval = account.get_evaluation(strategy.strategy_name, 365 * 24 * 60)

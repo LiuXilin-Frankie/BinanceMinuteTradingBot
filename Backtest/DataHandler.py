@@ -14,7 +14,7 @@ and this file is to read the data from Mysql and convert it to the dict type
 db = pymysql.connect(host = '127.0.0.1', user = 'root', passwd = 'root', db = 'CryptoCurrency', charset = 'utf8')
 
 
-class DataHandler():
+class DataHandler:
     def __init__(self, symbols: List):
         # data dict
         self.kline_history_backtest = {}  # the keys is datetime and every datetime is a dict which keys are symbols and the value are also dicts containing data

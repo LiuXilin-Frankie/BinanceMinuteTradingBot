@@ -6,7 +6,7 @@ from Evaluation import Evaluation
 
 
 class Account:
-    def __init__(self, balance_init, start_time, end_time, buy_cost_rate = 0, sell_cost_rate = 0,
+    def __init__(self, balance_init, start_time, end_time, buy_cost_rate = 0.0001, sell_cost_rate = 0.0001,
                  stop_loss_rate = -0.1, stop_profit_rate = 0.2):
 
         self.balance_init = balance_init
@@ -140,5 +140,4 @@ class Account:
         max_drawdown, drawdown_duration = Evaluation.get_max_drawdown(nav)
         evaluation = pd.DataFrame(index = ['sharpe_ratio', 'max_drawdown', 'drawdown_duration'],
                                   columns = [strategy_name], data = [sharpe_ratio, max_drawdown, drawdown_duration])
-        # evaluation.columns=['sharpe_ratio', 'max_drawdown', 'drawdown_duration']
         return evaluation
