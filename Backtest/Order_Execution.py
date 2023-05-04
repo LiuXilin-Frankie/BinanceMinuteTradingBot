@@ -2,10 +2,14 @@ import datetime
 from DataHandler import DataHandler
 from Account import Account
 
+'''
+OrderExecutionHandler would receive the order from Strategy_BackTest and would execute the orders through class Account to 
+buy or sell, here we assume the order would all be executed using the T+delay_min close price when order being sent at T
+and if there is a warning signal, it could close all the current positions.
 
 '''
 
-'''
+
 class OrderExecutionHandler:
     def __init__(self, dh: DataHandler, account: Account, delay_min: int):
         self.delay_min = delay_min
@@ -24,7 +28,7 @@ class OrderExecutionHandler:
                 self.account.sell(sell_time, symbol, sell_price, order[symbol]['quantity'])
 
         execution_time = time + datetime.timedelta(
-            self.delay_min)  # trade done at this time, not the signal generation time
+            minutes = self.delay_min)  # trade done at this time, not the signal generation time
         if warning_signal == 1:
             self.account.stop_profit_time.append(execution_time)
             return execution_time,

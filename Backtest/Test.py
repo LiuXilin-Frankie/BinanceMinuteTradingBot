@@ -1,3 +1,5 @@
+import pandas as pd
+
 from Order_Execution import OrderExecutionHandler
 from Strategy_BackTest import *
 from BackTest import BackTest
@@ -13,13 +15,14 @@ end_time = '2021-01-14 12:02:00'
 use_frequency = '1m'
 dh = DataHandler(symbols = trading_symbols)
 
+
 dh.get_all_data(use_frequency, start_time, end_time)
 
 start_time_backtest = datetime.datetime(2021, 1, 14, 9, 00)
 end_time_backtest = datetime.datetime(2021, 1, 14, 11, 50)
 
 account = Account(balance_init = 100000, start_time = start_time_backtest,
-                  end_time = end_time_backtest, stop_loss_rate = -0.01, stop_profit_rate = 0.2)
+                  end_time = end_time_backtest, stop_loss_rate = -0.0001, stop_profit_rate = 0.2)
 
 strategy = strategy_DualMA('DualMA', dh, start_time = start_time_backtest,
                            end_time = end_time_backtest, trading_symbols = trading_symbols,
