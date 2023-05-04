@@ -31,58 +31,97 @@ def dashboard():
 
 @app.route("/get_netvaluetemp")
 def update_NVT_data():
-    tt = []
-    for i in range(300):
-        tt.append(random.randint(0,100))
-    return jsonify(tt)
+    return jsonify(NVP)
 
 
 @app.route("/get_operationhistory")
 def update_OP_data():
-    OP = [['2023-04-06 10:32:00', 'Buy', 21, 4500],
-    ['2023-04-06 10:35:00', 'Sell', 20, 4700],
-    ['2023-04-06 10:37:00', 'Buy', 21, 4900],
-    ['2023-04-06 10:39:00', 'Buy', 11, 4500],
-    ['2023-04-06 10:43:00', 'Sell', 10, 4700],
-    ['2023-04-06 10:45:00', 'Buy', 21, 4700],
-    ['2023-04-06 10:55:00', 'Sell', 10, 4700],
-    ['2023-04-06 11:03:00', 'Sell', 11, 4700],
-    ['2023-04-06 11:20:00', 'Buy', 21, 4500],
-    ['2023-04-06 11:22:00', 'Sell', 10, 4600],
-    ['2023-04-06 11:28:00', 'Sell', 20, 5000],
-    ['2023-04-06 11:38:00', 'Buy', 21, 4600]]
-    for i in range(len(OP)):
-        OP[i][2] =  random.randint(10,30)
-        OP[i][3] = OP[i][2]*100*random.randint(1,10)
     return jsonify(OP)
 
 
 @app.route("/get_TCA")
 def update_TCA_data():
-    TCA = [
-['pnl(M)',0.088],
-['%ret',0.91],   
-['%tvr',36.27],  
-['shrp (IR)','0.33( 0.02)'],
-['%dd',3.62],   
-['%win',0.52],   
-['margin',0.51],   
-['fitsc',0.05],  
-['lnum',583.4],  
-['snum',584.7],   
-['tdays',240], 
-['Tratio',1.00]
-]
-    for i in range(len(TCA)):
-        if i != 3:
-            TCA[i][1] =  TCA[i][1] + TCA[i][1]*0.1*math.sin(random.randint(0,100))
     return jsonify(TCA)
 
 
 
 
+#交易时间判断
+def is_trade_day(date):
+    td_df = sse.schedule(start_date=date, end_date=date)
+    return len(td_df.index)
+
+
+def is_trade_time():#延迟1min结束
+    global trade_time
+    trade_time = False
+    while True:
+        today = str(datetime.date.today())
+        if is_trade_day(today):
+            while True:
+                if ('09:30:00'<datetime.datetime.now().strftime("%H:%M:%S")<'11:31:00') or ('13:00:00'<datetime.datetime.now().strftime("%H:%M:%S")<'15:01:00'):
+                    trade_time = True
+                    time.sleep(1)
+               
+                else:
+                    trade_time = False
+                    time.sleep(1)
+                    if datetime.datetime.now().strftime("%H:%M:%S")>'17:00:00':
+                        time.sleep(60*60*15)
+                        break
+        else:
+            time.sleep(60*60*24)
+
+
+
+def read_netvalue():
+    global NVP
+    while True:
+        if trade_time:
+            data = pd.read_table('NetValueTemp.log',sep=',',header=None)
+            if len(data)>300:
+                data = data[-300:]
+            NVP = data[1].values.tolist()
+            time.sleep(1)
+        else:
+            time.sleep(1)
+            
+def read_op():
+     global OP
+     while True:
+         if trade_time:
+             data = pd.read_table('Operation.log',sep=',',header=None)
+             if len(data)>10:
+                 data = data[-10:]
+             OP = data.values.tolist()
+             time.sleep(1)
+         else:
+             time.sleep(1)       
+    
+def read_TCA():
+     global TCA
+     while True:
+         if trade_time:
+             data = pd.read_table('TCA.log',sep=',',header=None)
+             if len(data)>10:
+                 data = data[-10:]
+             TCA = data.values.tolist()
+             time.sleep(1)
+         else:
+             time.sleep(1)      
 
 
 
 if __name__ == "__main__":
+   # 实盘用运行这两行
+   # t1=threading.Thread(target=is_trade_time)
+   # t1.start()
+    trade_time = True#演示用
+    t2=threading.Thread(target=read_netvalue)
+    t3=threading.Thread(target=read_op)
+    t4=threading.Thread(target=read_TCA)
+    t2.start()
+    t3.start()
+    t4.start()
+    
     app.run(host='0.0.0.0',port=1122)
