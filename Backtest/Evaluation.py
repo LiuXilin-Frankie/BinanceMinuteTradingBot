@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 
+'''
+get some indicator to evaluate the performance of the strategy.
 
+'''
 class Evaluation:
     def _get_return(cls, nav: DataFrame) -> Series:
         '''

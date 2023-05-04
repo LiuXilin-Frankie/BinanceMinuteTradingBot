@@ -4,6 +4,10 @@ from DataHandler import DataHandler
 import pandas as pd
 from Evaluation import Evaluation
 
+'''
+this class would record all the trading information.
+'''
+
 
 class Account:
     def __init__(self, balance_init, start_time, end_time, buy_cost_rate = 0.0001, sell_cost_rate = 0.0001,
@@ -122,6 +126,10 @@ class Account:
         all_trading_info = all_trading_info.reset_index(drop = False).set_index('time').sort_index()
         all_trading_info.rename(columns = {'index': 'code'}, inplace = True)
 
+        stop_loss_df = pd.DataFrame(index = self.stop_loss_time, data = 1, columns = ["stop_loss"])
+        stop_profit_df = pd.DataFrame(index = self.stop_profit_time, data = 1, columns = ["stop_profit"])
+
+        all_trading_info = pd.concat([all_trading_info, stop_loss_df, stop_profit_df], join = 'outer',axis = 1).fillna(0)
         return all_trading_info
 
     def get_netvalue_time_series(self) -> DataFrame:

@@ -1,5 +1,9 @@
 from Order_Execution import OrderExecutionHandler
 
+
+'''
+this class would run the whole strategy through the method named run_strategy method.
+'''
 class BackTest:
     def __init__(self, strategy, order_execution_handler: OrderExecutionHandler, stop_time_length_min: int):
 
