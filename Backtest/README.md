@@ -15,3 +15,9 @@
 2. 回测时假设的是order会被完全执行，没考虑交易执行过程中一些市场摩擦，后续可增加更多的Order执行结果，记录执行状态。
 3. 目前所有封装进去的策略采取的是简单固定策略执行后资产头寸绝对值的方法，比如设定了策略中的参数quantity为10，多头信号时产生时，当Order执行结束会使得头寸为10，当空头信号产生时，当Order执行结束会使得头寸为-10。后续可进行更精细化的仓位管理。
 4. 风控没有单独设立模块，只是比较简单地通过监测账户的止盈止损来平仓以及停止运行策略一段时间。
+
+### 参考资料
+1. https://github.com/tobiasbrodd/backtester
+2. https://www.tushare.pro/document/1?doc_id=90
+3. https://blog.csdn.net/qq_31611005/article/details/103834578
+4. https://www.myquant.cn/docs/python_strategyies/153
