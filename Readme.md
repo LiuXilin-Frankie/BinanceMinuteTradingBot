@@ -1,6 +1,6 @@
 # Binance Trading System
 
-used for binance trading frame-work.
+used for binance trading framework.
 
 + BinanceTradingBot会是独立写在文件framework_old.py中的一个基类，提供数据更新和处理的方法，以及基本的交易方法。正常的情况下，您无需阅读此文件的代码就可以编写您的数据
 + 你可以在外部文件中创建一个新的类，让它继承自BinanceTradingBot类，并添加任何你想要的新方法或覆盖父类中的现有方法。代码示例已经在autotrader中给出。
@@ -20,6 +20,7 @@ pip install -r requirements.txt
 ```
 
 After corresponding env is ready, you can simply run the sys via one command
+
 ```shell
 conda activate BinanceTrading
 python autotrader.py
@@ -28,13 +29,13 @@ python autotrader.py
 ### file structure
 
 + Backtest: backtest module to test your strategy
-+ Data: communicate eith the exchange and update history K-line
++ Data: communicate with the exchange and update history K-line
 + UI: our GUI module, will update the plot and table every 1min
 + logger: logger part, log info of our strategy
-+ Data_to_SQL.py: Convert histoy maiket data to SQL for backtest                          
-+ api_key.txt: api key and seceret
-+ framework_old.py: trading frame work
-+ autotrader.py: strategy sample
++ Data_to_SQL.py: Convert history market data to SQL for backtesting
++ api_key.txt: api key and secret
++ framework_old.py: trading framework
++ autotrader.py: strategy samples
 + python-binance-readthedocs-io-en-latest.pdf: docs of python-binance==1.0.17
 
 ### logic
@@ -42,7 +43,7 @@ python autotrader.py
 事实上，这仅仅只是一次模拟交易
 
 + 程序能够实时接收的行情数据仅仅为您给出symbol的kline数据，数据格式在后文给出
-+ 如果您的策略判断进行交易，您只能选择市价单的方式成交，函数返回的数字，为下单命令到达交易所之后，最新且最近的一次成交发生的价格，我们假设这是我们策略实际成交的价格（我们忽略了数量的问题）
++ 如果您的策略判断进行交易，您只能选择市价单的方式成交，函数返回的数字为下单命令到达交易所之后最新且最近的一次成交发生的价格，我们假设这是我们策略实际成交的价格（我们忽略了数量的问题）
 + logger会每分钟记录我们的净值变动
 
 kline数据格式如下：
