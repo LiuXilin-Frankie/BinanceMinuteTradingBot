@@ -12,5 +12,7 @@
 如需查看动态效果，可运行UI_backend_randomdata.py
 
 
-#### running error (IF)
-see https://github.com/sqreen/PyMiniRacer/issues/143 for “The required file "libmini_racer.dylib" can't be found” error, if your computer chip is m1
+=======
+如果运行backend.py时出现报错：Error: [WinError 10013] 以一种访问权限不允许的方式做了一个访问套接字的尝试  
+通过打开cmd 运行命令netstat -ano|findstr 1122 解决  
+
