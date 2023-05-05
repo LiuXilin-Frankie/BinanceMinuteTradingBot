@@ -10,3 +10,7 @@
 在本地运行UI_backend.py  
 使用浏览器访问http://本地IP地址:1122/dashboard 即可  (请使用无痕模式！！！)  
 如需查看动态效果，可运行UI_backend_randomdata.py
+
+如果运行backend.py时出现报错：Error: [WinError 10013] 以一种访问权限不允许的方式做了一个访问套接字的尝试  
+通过打开cmd 运行命令netstat -ano|findstr 1122 解决  
+
