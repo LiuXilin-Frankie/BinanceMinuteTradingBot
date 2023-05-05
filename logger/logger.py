@@ -18,7 +18,8 @@ class Logger:
 
     def flush_trades(self,symbol,direction,qty,prc):
         time_now = str(datetime.datetime.now())[:16]+':00'
-        info_operation = time_now +', '+direction +', '+str(qty) +', '+str(prc)
+        if qty==0: qty=1
+        info_operation = time_now +', '+direction+', '+str(prc) +', '+str(qty) 
         self.flush_file(self.UI_path+'Operation.log', info_operation)
 
     def flush_file(self,filepath,infoadd):

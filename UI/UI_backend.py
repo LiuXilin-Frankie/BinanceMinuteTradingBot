@@ -132,5 +132,7 @@ if __name__ == "__main__":
     
     app.run(host='0.0.0.0',port=1122)
     """
+    /opt/anaconda3/envs/BinanceTrading/bin/python /Users/absolutex/Library/CloudStorage/OneDrive-个人/market/BlockChain/BinanceMarketmaking/UI/UI_backend.py
+    
     http://0.0.0.0:1122/dashboard
     """

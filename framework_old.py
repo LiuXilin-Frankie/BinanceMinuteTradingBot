@@ -86,7 +86,7 @@ class BinanceTradingBot:
         symbol = symbol.upper()
         if self.order_errors(qty, symbol):  # used for catching the error
             print("symbol,qty: ", symbol, qty)
-            start_time = time.time()
+            # start_time = time.time()
             # order_info = self.client.order_market_sell(symbol=symbol, quantity=str(qty))
             # print("time cost for place the buy pivot order is:",time.time()-start_time)
             # self.order_info_dict[symbol] = order_info

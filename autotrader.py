@@ -7,6 +7,7 @@ from framework_old import BinanceTradingBot
 import sys
 from logger.logger import *
 import os
+import datetime
 
 """
 Todo:
@@ -29,11 +30,12 @@ class MyTradingBot(BinanceTradingBot):
     def __init__(self, api_key, api_secret, symbols):
         super().__init__(api_key, api_secret)
         self.symbols = symbols
-        self.balance = 100000  # default is usdt
+        self.balance = 10000  # default is usdt
         self.position = {}
         self.NetValue = self.balance
+        self.last_his = str(datetime.datetime.now())[:16]
         for symbol in symbols:
-            self.position[symbol] = 0.7
+            self.position[symbol] = 0.07
 
         ### this is your self-defined parameters
         self.kline_history = {}
@@ -46,7 +48,7 @@ class MyTradingBot(BinanceTradingBot):
             new_kline = self.klines[symbol]
             prc = new_kline
             self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
-        self.NetValue = self.NetValue/100000
+        self.NetValue = self.NetValue/10000
         #logger.flush_netvalue(self.NetValue)
 
 
@@ -57,6 +59,8 @@ class MyTradingBot(BinanceTradingBot):
         请在这里写下您的历史数据记录函数，帮助您判断是否需要交易
         """
         self.UpdateNV()
+        self.min_now = str(datetime.datetime.now())[:16]
+        
         for symbol in self.symbols:
             new_kline = self.klines[symbol]
             if new_kline not in self.kline_history[symbol]:
@@ -64,7 +68,13 @@ class MyTradingBot(BinanceTradingBot):
                 # 同样防止内存过载，我们只记录20次历史数据
                 self.kline_history[symbol] = self.kline_history[symbol][-20:]
                 # print('add new kline for', symbol)
-                logger.flush_netvalue(self.NetValue)
+
+        if self.min_now != self.last_his:
+            logger.flush_netvalue(self.NetValue)
+            self.last_his = self.min_now
+        else:
+            pass
+        
 
     def strategy(self):
         """
@@ -295,7 +305,7 @@ if __name__ == "__main__":
     bm = ThreadedWebsocketManager(api_key = api_key, api_secret = secret_key)
     bm.start()
     for symbol in symbols:
-        bm.start_kline_socket(callback = update_klines_dict, symbol = symbols[0])
+        bm.start_kline_socket(callback = update_klines_dict, symbol = symbols[0],interval='1m')
     time.sleep(2)  # wait for initialize
     
     
@@ -303,3 +313,7 @@ if __name__ == "__main__":
     print('start bot')
     time.sleep(5)
     BMMB.start()
+
+    """
+    /opt/anaconda3/envs/BinanceTrading/bin/python /Users/absolutex/Library/CloudStorage/OneDrive-个人/market/BlockChain/BinanceMarketmaking/autotrader.py
+    """
