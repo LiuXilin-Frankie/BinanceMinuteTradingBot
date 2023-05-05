@@ -10,3 +10,7 @@
 在本地运行UI_backend.py  
 使用浏览器访问http://本地IP地址:1122/dashboard 即可  (请使用无痕模式！！！)  
 如需查看动态效果，可运行UI_backend_randomdata.py
+
+
+#### running error (IF)
+see https://github.com/sqreen/PyMiniRacer/issues/143 for “The required file "libmini_racer.dylib" can't be found” error, if your computer chip is m1

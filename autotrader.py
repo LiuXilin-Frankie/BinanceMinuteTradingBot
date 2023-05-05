@@ -41,7 +41,6 @@ class MyTradingBot(BinanceTradingBot):
         但是无法获取到历史的，这样写的目的是防止self.klines中的k线数据一味append导致内存过载
         请在这里写下您的历史数据记录函数，帮助您判断是否需要交易
         """
-        self.NetValue = self.balance
         for symbol in self.symbols:
             new_kline = self.klines[symbol]
             if new_kline not in self.kline_history[symbol]:
@@ -50,17 +49,21 @@ class MyTradingBot(BinanceTradingBot):
                 self.kline_history[symbol] = self.kline_history[symbol][-20:]
                 # print('add new kline for', symbol)
 
+        ### used for logger
+        ### 用来logger记录并且GUI plot
+        ### 编写策略的人可以忽视这一部分
+        self.NetValue = self.balance
+        for symbol in self.symbols:
+            new_kline = self.klines[symbol]
             prc = new_kline
             self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
+            
             if self.position[symbol] != 0.0001:
                 print('NetValue is:', self.NetValue)
                 print('balance is',self.balance)
                 print(self.position, new_kline['k']['c'])
                 print('\n')
-
-        ### used for logger
-        ### 用来logger记录并且GUI plot
-        ### 编写策略的人可以忽视这一部分
+        print(self.NetValue)
 
     def strategy(self):
         """
@@ -95,7 +98,6 @@ class MyTradingBot(BinanceTradingBot):
                 # if short position:
                 if self.position[symbol] < 0:
                     # consider the delay, the price make change when we trade, so check if the balance could buy 1 more unit
-
                     if self.balance > (-self.position[symbol] + quantity + 1) * float(self.klines[symbol]['k']["c"]):
                         price = self.market_buy(symbol, -self.position[symbol] + quantity)
                         self.balance = self.balance - price * (-self.position[symbol] + quantity)
