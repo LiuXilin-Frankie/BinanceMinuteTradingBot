@@ -20,6 +20,9 @@ import pandas_market_calendars as mcal
 import random 
 import math
 
+import os
+import sys
+
 
 sse = mcal.get_calendar('SSE')#上海证券交易所日历
 
@@ -78,7 +81,8 @@ def read_netvalue():
     global NVP
     while True:
         if trade_time:
-            data = pd.read_table('NetValueTemp.log',sep=',',header=None)
+            path = str(os.path.abspath(sys.argv[0]))[:-13]
+            data = pd.read_table(path+'NetValueTemp.log',sep=',',header=None)
             if len(data)>300:
                 data = data[-300:]
             NVP = data[1].values.tolist()
@@ -90,7 +94,8 @@ def read_op():
      global OP
      while True:
          if trade_time:
-             data = pd.read_table('Operation.log',sep=',',header=None)
+             path = str(os.path.abspath(sys.argv[0]))[:-13]
+             data = pd.read_table(path+'Operation.log',sep=',',header=None)
              if len(data)>10:
                  data = data[-10:]
              OP = data.values.tolist()
@@ -102,7 +107,8 @@ def read_TCA():
      global TCA
      while True:
          if trade_time:
-             data = pd.read_table('TCA.log',sep=',',header=None)
+             path = str(os.path.abspath(sys.argv[0]))[:-13]
+             data = pd.read_table(path+'TCA.log',sep=',',header=None)
              if len(data)>10:
                  data = data[-10:]
              TCA = data.values.tolist()
@@ -125,3 +131,6 @@ if __name__ == "__main__":
     t4.start()
     
     app.run(host='0.0.0.0',port=1122)
+    """
+    http://0.0.0.0:1122/dashboard
+    """

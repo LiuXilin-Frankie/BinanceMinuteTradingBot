@@ -1,10 +1,10 @@
-### web端实时监控交易
-#### 功能：
+# web端实时监控交易
+### 功能：
 显示最近300S（交易时间）的净值走势  
 展示最近10条交易操作，每秒刷新  
 展示最近的交易成本分析指标，每秒更新
 
-#### 部署
+### 部署
 保持文件相对路径，主要是三大部分:backend.py+templates(网页)+static(静态文件)  
 三种需要展示的数据 以需要的更新频率 写入到相应log文件里，格式与sample保持一致  
 在本地运行UI_backend.py  
@@ -16,6 +16,6 @@
 如果运行backend.py时出现报错：Error: [WinError 10013] 以一种访问权限不允许的方式做了一个访问套接字的尝试  
 通过打开cmd 运行命令netstat -ano|findstr 1122 解决  
 
-
-#### running error (IF)
+-----------------------------
+### running error (IF)
 see https://github.com/sqreen/PyMiniRacer/issues/143 for “The required file "libmini_racer.dylib" can't be found” error, if your computer chip is m1
