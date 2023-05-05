@@ -33,7 +33,7 @@ class MyTradingBot(BinanceTradingBot):
         self.position = {}
         self.NetValue = self.balance
         for symbol in symbols:
-            self.position[symbol] = 0.0001
+            self.position[symbol] = 0.7
 
         ### this is your self-defined parameters
         self.kline_history = {}
@@ -46,12 +46,7 @@ class MyTradingBot(BinanceTradingBot):
             new_kline = self.klines[symbol]
             prc = new_kline
             self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
-            
-            if self.position[symbol] != 0.0001:
-                print('NetValue is:', self.NetValue)
-                print('balance is',self.balance)
-                print(self.position, new_kline['k']['c'])
-                print('\n')
+        self.NetValue = self.NetValue/100000
         #logger.flush_netvalue(self.NetValue)
 
 
@@ -61,6 +56,7 @@ class MyTradingBot(BinanceTradingBot):
         但是无法获取到历史的，这样写的目的是防止self.klines中的k线数据一味append导致内存过载
         请在这里写下您的历史数据记录函数，帮助您判断是否需要交易
         """
+        self.UpdateNV()
         for symbol in self.symbols:
             new_kline = self.klines[symbol]
             if new_kline not in self.kline_history[symbol]:
@@ -68,6 +64,7 @@ class MyTradingBot(BinanceTradingBot):
                 # 同样防止内存过载，我们只记录20次历史数据
                 self.kline_history[symbol] = self.kline_history[symbol][-20:]
                 # print('add new kline for', symbol)
+                logger.flush_netvalue(self.NetValue)
 
     def strategy(self):
         """

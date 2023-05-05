@@ -13,7 +13,7 @@ class Logger:
 
     def flush_netvalue(self,value):
         time_now = str(datetime.datetime.now())[:16]+':00'
-        info_operation = time_now +' , ' + value
+        info_operation = time_now +' , ' + str(value)
         self.flush_file((self.UI_path+'NetValueTemp.log'), info_operation)
 
     def flush_trades(self,symbol,direction,qty,prc):
