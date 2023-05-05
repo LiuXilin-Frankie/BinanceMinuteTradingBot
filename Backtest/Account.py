@@ -144,7 +144,7 @@ class Account:
 
     def get_evaluation(self, strategy_name, period_num) -> DataFrame:
         nav = self.get_netvalue_time_series()
-        sharpe_ratio = Evaluation.get_shape_ratio(nav, period_num)
+        sharpe_ratio = Evaluation.get_sharpe_ratio(nav, period_num)
         max_drawdown, drawdown_duration = Evaluation.get_max_drawdown(nav)
         evaluation = pd.DataFrame(index = ['sharpe_ratio', 'max_drawdown', 'drawdown_duration'],
                                   columns = [strategy_name], data = [sharpe_ratio, max_drawdown, drawdown_duration])

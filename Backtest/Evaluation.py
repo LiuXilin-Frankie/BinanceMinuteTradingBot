@@ -18,7 +18,7 @@ class Evaluation:
         return return_p
 
     @classmethod
-    def get_shape_ratio(cls, nav: DataFrame, period_num: int):
+    def get_sharpe_ratio(cls, nav: DataFrame, period_num: int):
         '''
         get annualized sharpe ratio
 
