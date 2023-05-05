@@ -14,12 +14,12 @@ class Logger:
     def flush_netvalue(self,value):
         time_now = str(datetime.datetime.now())[:16]+':00'
         info_operation = time_now +' , ' + value
-        self.flush_file(self, self.UI_path+'NetValueTemp.log', info_operation)
+        self.flush_file((self.UI_path+'NetValueTemp.log'), info_operation)
 
     def flush_trades(self,symbol,direction,qty,prc):
         time_now = str(datetime.datetime.now())[:16]+':00'
         info_operation = time_now +', '+direction +', '+str(qty) +', '+str(prc)
-        self.flush_file(self, self.UI_path+'Operation.log', info_operation)
+        self.flush_file(self.UI_path+'Operation.log', info_operation)
 
     def flush_file(self,filepath,infoadd):
         with open(filepath, "r") as f:
@@ -28,12 +28,6 @@ class Logger:
             f.write(text + infoadd)
         print(infoadd)
 
-        compressed = []
-        for arr in orders.values():
-            for order in arr:
-                compressed.append([order.symbol, order.price, order.quantity])
-
-        return compressed
 
 #logger = Logger(UI_path)
 #logger.flush(state, orders)

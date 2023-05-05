@@ -40,7 +40,20 @@ class MyTradingBot(BinanceTradingBot):
         for symbol in symbols:
             self.kline_history[symbol] = list()
 
-    
+    def UpdateNV(self):
+        self.NetValue = self.balance
+        for symbol in self.symbols:
+            new_kline = self.klines[symbol]
+            prc = new_kline
+            self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
+            
+            if self.position[symbol] != 0.0001:
+                print('NetValue is:', self.NetValue)
+                print('balance is',self.balance)
+                print(self.position, new_kline['k']['c'])
+                print('\n')
+        #logger.flush_netvalue(self.NetValue)
+
 
     def update_data(self):
         """
@@ -55,24 +68,6 @@ class MyTradingBot(BinanceTradingBot):
                 # 同样防止内存过载，我们只记录20次历史数据
                 self.kline_history[symbol] = self.kline_history[symbol][-20:]
                 # print('add new kline for', symbol)
-
-        ### used for logger
-        ### 用来logger记录并且GUI plot
-        ### 编写策略的人可以忽视这一部分
-        self.NetValue = self.balance
-        for symbol in self.symbols:
-            new_kline = self.klines[symbol]
-            prc = new_kline
-            self.NetValue += float(prc['k']['c']) * float(self.position[symbol])
-            
-            if self.position[symbol] != 0.0001:
-                print('NetValue is:', self.NetValue)
-                print('balance is',self.balance)
-                print(self.position, new_kline['k']['c'])
-                print('\n')
-        #print(self.NetValue)
-
-        #logger.flush_netvalue(self.NetValue)
 
     def strategy(self):
         """
