@@ -5,6 +5,8 @@ import time
 from binance import ThreadedWebsocketManager
 from framework_old import BinanceTradingBot
 import sys
+from logger.logger import *
+import os
 
 """
 Todo:
@@ -18,6 +20,9 @@ Todo:
     我们只能模拟下市价单，返回的值为如果我们真的下市价单成交的价格（忽略了数量
     请在position balance等属性中同步更新方便计算净值
 """
+UI_path = str(os.path.abspath(sys.argv[0]))[:-13]+'UI/'
+logger = Logger(UI_path)
+print(UI_path)
 
 
 class MyTradingBot(BinanceTradingBot):
@@ -34,6 +39,8 @@ class MyTradingBot(BinanceTradingBot):
         self.kline_history = {}
         for symbol in symbols:
             self.kline_history[symbol] = list()
+
+    
 
     def update_data(self):
         """
@@ -63,7 +70,9 @@ class MyTradingBot(BinanceTradingBot):
                 print('balance is',self.balance)
                 print(self.position, new_kline['k']['c'])
                 print('\n')
-        print(self.NetValue)
+        #print(self.NetValue)
+
+        #logger.flush_netvalue(self.NetValue)
 
     def strategy(self):
         """
@@ -102,6 +111,8 @@ class MyTradingBot(BinanceTradingBot):
                         price = self.market_buy(symbol, -self.position[symbol] + quantity)
                         self.balance = self.balance - price * (-self.position[symbol] + quantity)
                         self.position[symbol] = quantity
+                        ### logger
+                        logger.flush_trades(symbol,'Buy',(-self.position[symbol] + quantity),price)
                     else:
                         print('Not enough Money!')
 
@@ -110,6 +121,8 @@ class MyTradingBot(BinanceTradingBot):
                         price = self.market_buy(symbol, qty = quantity)
                         self.balance = self.balance - price * quantity
                         self.position[symbol] = quantity
+                        ### logger
+                        logger.flush_trades(symbol,'Buy',quantity,price)
                     else:
                         print('Not enough Money!')
 
@@ -123,11 +136,15 @@ class MyTradingBot(BinanceTradingBot):
                     price = self.market_sell(symbol, self.position[symbol] + quantity)
                     self.balance = self.balance + price * (self.position[symbol] + quantity)
                     self.position[symbol] = -quantity
+                    ### logger
+                    logger.flush_trades(symbol,'Sell',(self.position[symbol] + quantity),price)
 
                 elif self.position[symbol] == 0:
                     price = self.market_sell(symbol, qty = quantity)
                     self.balance = self.balance + price * quantity
                     self.position[symbol] = - quantity
+                    ### logger
+                    logger.flush_trades(symbol,'Sell',quantity,price)
 
                 elif self.position[symbol] < 0:
                     return
