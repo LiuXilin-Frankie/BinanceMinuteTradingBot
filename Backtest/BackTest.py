@@ -15,7 +15,7 @@ class BackTest:
         while True:
             if self.strategy.continue_backtest:
                 order, time, warning_signal = self.strategy.start_run()
-                print(order)
+                # print(order)
                 if time == None:  # means already reach the end date of the backtest
                     self.strategy.continue_backtest = False
                     break
