@@ -13,9 +13,9 @@ import time,threading,datetime,copy,traceback
 
 import numpy as np
 import pandas as pd
-import pymysql as psql
-import akshare as ak
-import scipy.stats as st
+#import pymysql as psql
+#import akshare as ak
+#import scipy.stats as st
 import pandas_market_calendars as mcal
 import random 
 import math
