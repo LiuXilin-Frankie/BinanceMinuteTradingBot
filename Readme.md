@@ -33,7 +33,7 @@ python autotrader.py
 + UI: our GUI module, will update the plot and table every 1min
 + logger: logger part, log info of our strategy
 + Data_to_SQL.py: Convert history market data to SQL for backtesting
-+ api_key.txt: api key and secret
++ api_key.txt: api key and password
 + framework_old.py: trading framework
 + autotrader.py: strategy samples
 + python-binance-readthedocs-io-en-latest.pdf: docs of python-binance==1.0.17
