@@ -2,7 +2,7 @@
 
 #### 回测系统主要可分为五大模块，数据读取模块DataHandler，策略模块Strategy_Backtest，交易执行模块Order_Execution，账户模块Account，以及最终策略运行模块BackTest。
 
-1. DataHandler.py :该模块功能为从MySQL数据库中读取读取历史交易数据。(在此之前，需要运行Data_to_SQL.py把数据压缩包中的数据储存到Mysql数据库中。)
+1. DataHandler.py :该模块功能为从MySQL数据库中读取读取历史交易数据。(在此之前，需要运行data_to_sql.py把数据压缩包中的数据储存到Mysql数据库中。)
 2. Account.py : 该模块功能是记录策略运行过程中的交易信息(包括资产名称，买卖头寸，买卖价格，买卖时间，账户头寸净值，账户可用交易金额等等)，考虑了单边0.0001的手续费，以及加入了止盈止损的监测和策略回测结束后策略效果的评估方法(get_evaluation方法会调用Evaluation.py 类中的方法来评估策略，指标为夏普比，最大回撤率以及最大回撤时间(分钟))。
 3. Strategy_BackTest.py : 该模块用于封装策略，策略中的start_run方法会根据从DataHandler类中不断更新获取到的行情数据来成Order(格式为字典，若无信号则为空字典{}。 eg: {'ADAUSDT': {'action': 'Short', 'quantity': 20}, 'BATUSDT': {'action': 'Short', 'quantity': 20}}) ，目前封装了三个经典策略，分别为 Dual MA, Dual Thrust 和 R Breaker。
 目前策略的风控是达到我们设定的止盈止损线时就会进行平仓，停止一段时间后再重新运行。
