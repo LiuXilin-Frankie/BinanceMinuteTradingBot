@@ -5,7 +5,7 @@ import datetime
 from typing import List
 
 '''
-before conversion, run Data_to_SQL.py to store the data
+before conversion, run data_to_sql.py to store the data
 
 and this file is to read the data from Mysql and convert it to the dict type
 '''
