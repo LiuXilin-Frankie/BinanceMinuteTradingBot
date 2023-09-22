@@ -34,7 +34,7 @@ class Evaluation:
     def get_max_drawdown(cls, nav: DataFrame):
         nav_s = nav.iloc[:, 0]
         cummax = nav_s.expanding().max()
-        drawdown = (cummax - nav_s) / cummax - 1
+        drawdown = (cummax - nav_s) / cummax 
         max_drawdown = max(drawdown)
         duration = pd.Series(index = drawdown.index)
         duration.iloc[0] = 0
